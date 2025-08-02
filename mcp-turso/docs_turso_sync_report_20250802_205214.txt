@@ -1,0 +1,14 @@
+
+🔄 RELATÓRIO DE SINCRONIZAÇÃO DOCS-TURSO
+==================================================
+
+📊 RESULTADOS:
+• Arquivos escaneados: 0
+• Conhecimento extraído: 0
+• Registros atualizados: 0
+• Novos registros: 0
+
+📝 ARQUIVOS PROCESSADOS:
+
+⏰ Timestamp: 2025-08-02 20:52:14
+✅ Sincronização concluída!
