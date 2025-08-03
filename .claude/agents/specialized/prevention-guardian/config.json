@@ -1,0 +1,102 @@
+{
+  "agent": {
+    "name": "prevention-guardian",
+    "type": "autonomous-maintenance",
+    "version": "2.0.0",
+    "description": "Autonomous agent for preventing duplications and maintaining code quality"
+  },
+  "settings": {
+    "scan_interval": 3600,
+    "auto_fix": true,
+    "generate_prps": true,
+    "use_sparc": true,
+    "max_agents": 8,
+    "daemon_mode": false
+  },
+  "detection": {
+    "duplication_threshold": 0.8,
+    "min_file_size": 100,
+    "max_file_size": 500,
+    "ignore_patterns": [
+      "*.test.js",
+      "*.spec.ts",
+      "*.min.js",
+      "node_modules/**",
+      "dist/**",
+      "build/**"
+    ],
+    "scan_extensions": [
+      ".js",
+      ".ts",
+      ".jsx",
+      ".tsx",
+      ".py",
+      ".java",
+      ".go",
+      ".rs"
+    ]
+  },
+  "correction": {
+    "require_tests": true,
+    "require_documentation": true,
+    "test_coverage_threshold": 0.8,
+    "max_changes_per_run": 10,
+    "backup_before_fix": true
+  },
+  "neural": {
+    "training_interval": 86400,
+    "min_samples": 100,
+    "accuracy_threshold": 0.9,
+    "model_type": "pattern-recognition",
+    "false_positive_limit": 0.05
+  },
+  "swarm": {
+    "topology": "hierarchical",
+    "coordination": "mesh",
+    "agents": [
+      "file-scanner",
+      "duplicate-detector",
+      "pattern-analyzer",
+      "code-analyzer",
+      "architecture-validator",
+      "sparc-coder",
+      "test-generator",
+      "prp-specialist"
+    ]
+  },
+  "metrics": {
+    "track": [
+      "duplications_prevented",
+      "code_quality_score",
+      "auto_fixes_applied",
+      "prps_generated",
+      "neural_accuracy",
+      "swarm_efficiency"
+    ],
+    "report_interval": 86400,
+    "dashboard_refresh": 300
+  },
+  "integration": {
+    "claude_flow": {
+      "enabled": true,
+      "tools": [
+        "swarm_init",
+        "agent_spawn",
+        "task_orchestrate",
+        "memory_usage",
+        "neural_train"
+      ]
+    },
+    "turso_mcp": {
+      "enabled": true,
+      "database": "context-memory",
+      "store_prps": true,
+      "store_metrics": true
+    },
+    "github_actions": {
+      "enabled": false,
+      "schedule": "0 */6 * * *",
+      "workflow": ".github/workflows/prevention-guardian.yml"
+    }
+  }
+}

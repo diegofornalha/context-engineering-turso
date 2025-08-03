@@ -55,7 +55,7 @@ start_server() {
 # Verificar status atual
 echo "📊 Status atual dos servidores:"
 check_mcp_server "Sentry" "node.*sentry" || echo "   Sentry: Inativo"
-check_mcp_server "Turso" "node.*turso" || echo "   Turso: Inativo"
+check_mcp_server "Turso" "node.*dist/index.js" || echo "   Turso: Inativo"
 check_mcp_server "Claude Flow" "claude-flow.*mcp" || echo "   Claude Flow: Inativo"
 
 echo ""
@@ -66,7 +66,7 @@ start_server "Sentry MCP" "./mcp-sentry/start-mcp.sh" "node.*sentry"
 echo ""
 
 # Iniciar Turso MCP  
-start_server "Turso MCP" "./mcp-turso/start-mcp.sh" "node.*turso"
+start_server "Turso MCP" "./mcp-turso/start-mcp.sh" "node.*dist/index.js"
 
 echo ""
 
@@ -78,7 +78,7 @@ echo ""
 # Status final
 echo "📋 Status final:"
 check_mcp_server "Sentry" "node.*sentry" || echo "   Sentry: ❌ Inativo"
-check_mcp_server "Turso" "node.*turso" || echo "   Turso: ❌ Inativo"
+check_mcp_server "Turso" "node.*dist/index.js" || echo "   Turso: ❌ Inativo"
 check_mcp_server "Claude Flow" "claude-flow.*mcp" || echo "   Claude Flow: ❌ Inativo"
 
 echo ""
@@ -86,7 +86,7 @@ echo "🎯 Próximos passos:"
 echo "1. Reinicie o Claude Code se necessário"
 echo "2. Teste as ferramentas:"
 echo "   - Sentry: mcp__sentry__list_projects, mcp__sentry__capture_message"
-echo "   - Turso: mcp__turso__list_databases, mcp__turso__execute_query"
+echo "   - Turso: mcp__mcp_turso__list_databases, mcp__mcp_turso__execute_query"
 echo "   - Claude Flow: mcp__claude-flow__swarm_init, mcp__claude-flow__agent_spawn"
 echo ""
 echo "✅ Script concluído!" 
