@@ -143,7 +143,7 @@ system.configure_system(
 
 ### Estrutura de Arquivos
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── prp-agent/              # PRP Agent (Core)
 │   ├── agents/             # Implementação dos agentes
 │   ├── tools/              # Ferramentas e integrações

@@ -424,7 +424,7 @@ MCP_SERVER_NAME=mcp-turso-memory
 MCP_SERVER_VERSION=1.0.0
 
 # Optional: Project Configuration
-PROJECT_NAME=context-engineering-intro
+PROJECT_NAME=context-engineering-turso
 PROJECT_VERSION=1.0.0
 ENVIRONMENT=development
 ```

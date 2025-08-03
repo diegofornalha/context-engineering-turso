@@ -9,21 +9,21 @@ Você queria que o servidor MCP Turso funcionasse no Claude Code da mesma forma 
 ### 1. **Verifiquei a Estrutura do Projeto**
 ```bash
 # Primeiro, verifiquei se o projeto estava compilado
-ls /Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/
+ls /Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/
 ```
 ✅ O projeto já estava compilado com todos os arquivos necessários em `dist/`
 
 ### 2. **Identifiquei o Arquivo Principal**
 ```bash
 # Encontrei o arquivo index.js com o shebang correto
-cat /Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/index.js
+cat /Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/index.js
 ```
 ✅ O arquivo `dist/index.js` era o ponto de entrada correto
 
 ### 3. **Adicionei o Servidor ao Claude Code**
 ```bash
 # Comando usado para adicionar o servidor
-claude mcp add mcp-turso-cloud node /Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/index.js \
+claude mcp add mcp-turso-cloud node /Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/index.js \
   --env TURSO_API_TOKEN="seu-turso-api-token" \
   --env TURSO_ORGANIZATION="sua-organizacao" \
   --env TURSO_DEFAULT_DATABASE="seu-database-padrao"
@@ -35,7 +35,7 @@ claude mcp add mcp-turso-cloud node /Users/agents/Desktop/context-engineering-in
 claude mcp list
 
 # Resultado:
-mcp-turso-cloud: node /Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/index.js - ✓ Connected
+mcp-turso-cloud: node /Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/index.js - ✓ Connected
 ```
 ✅ Servidor conectado e funcionando!
 
@@ -56,7 +56,7 @@ Para:
 
 ## 🔑 Pontos-Chave do Sucesso
 
-1. **Usar o caminho completo**: `/Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/index.js`
+1. **Usar o caminho completo**: `/Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/index.js`
 2. **Usar `node` como comando**: O servidor é um script Node.js
 3. **Incluir variáveis de ambiente**: Mesmo com placeholders, são necessárias
 4. **Verificar a compilação**: O projeto precisa estar compilado (`npm run build`)

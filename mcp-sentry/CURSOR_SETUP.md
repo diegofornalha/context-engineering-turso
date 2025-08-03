@@ -9,7 +9,7 @@ O MCP Sentry está **totalmente configurado** e funcionando no Cursor com todas 
 ## 📁 Arquivos de Configuração
 
 ### Cursor MCP Config
-**Localização**: `/Users/agents/Desktop/context-engineering-intro/.cursor/mcp.json`
+**Localização**: `/Users/agents/Desktop/context-engineering-turso/.cursor/mcp.json`
 
 ```json
 {
@@ -38,7 +38,7 @@ O MCP Sentry está **totalmente configurado** e funcionando no Cursor com todas 
 
 ### Opção 1: Script Automático
 ```bash
-cd /Users/agents/Desktop/context-engineering-intro/mcp-sentry
+cd /Users/agents/Desktop/context-engineering-turso/mcp-sentry
 ./add-to-cursor.sh
 ```
 

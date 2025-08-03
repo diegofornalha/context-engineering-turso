@@ -151,7 +151,7 @@ async def main():
     print("="*50)
     
     # Lê o arquivo SQL
-    sql_file = "/Users/agents/Desktop/context-engineering-intro/sql/operations/execute-remaining.sql"
+    sql_file = "/Users/agents/Desktop/context-engineering-turso/sql/operations/execute-remaining.sql"
     
     try:
         with open(sql_file, 'r', encoding='utf-8') as f:

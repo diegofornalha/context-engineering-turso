@@ -56,7 +56,7 @@ graph TD
 ## 📁 Nova Estrutura Limpa
 
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── turso-agent/           # PRP Especialista Turso
 │   └── agents/
 │       └── turso_specialist.py

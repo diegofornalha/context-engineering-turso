@@ -1769,7 +1769,7 @@ Projeto do agente PydanticAI especializado:
 
 ### 📁 **Estrutura Atual:**
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── docs/                    # 25 arquivos .md
 ├── py-prp/                  # 13 arquivos .py
 ├── sql-db/                  # 6 arquivos (.sql + .db)
@@ -2620,7 +2620,7 @@ cd mcp-turso
 ## 🔧 Arquivos Criados
 
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── mcp-turso/                    # Servidor MCP Turso
 │   ├── src/index.ts             # Código principal
 │   ├── package.json             # Dependências
@@ -3311,7 +3311,7 @@ Este guia mostra como configurar o Cursor IDE para usar o MCP do agente PRP, per
   "mcpServers": {
     "turso": {
       "command": "node",
-      "args": ["/Users/agents/Desktop/context-engineering-intro/mcp-turso-cloud/dist/index.js"],
+      "args": ["/Users/agents/Desktop/context-engineering-turso/mcp-turso-cloud/dist/index.js"],
       "env": {
         "TURSO_API_TOKEN": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...",
         "TURSO_ORGANIZATION": "diegofornalha",
@@ -3320,18 +3320,18 @@ Este guia mostra como configurar o Cursor IDE para usar o MCP do agente PRP, per
     },
     "prp-agent": {
       "command": "python",
-      "args": ["/Users/agents/Desktop/context-engineering-intro/prp-agent/mcp_server.py"],
+      "args": ["/Users/agents/Desktop/context-engineering-turso/prp-agent/mcp_server.py"],
       "env": {
         "LLM_PROVIDER": "openai",
         "LLM_API_KEY": "sua_chave_openai_aqui",
         "LLM_MODEL": "gpt-4",
         "LLM_BASE_URL": "https://api.openai.com/v1",
-        "DATABASE_PATH": "/Users/agents/Desktop/context-engineering-intro/context-memory.db"
+        "DATABASE_PATH": "/Users/agents/Desktop/context-engineering-turso/context-memory.db"
       }
     },
     "sentry": {
       "command": "node",
-      "args": ["/Users/agents/Desktop/context-engineering-intro/sentry-mcp-cursor/dist/index.js"],
+      "args": ["/Users/agents/Desktop/context-engineering-turso/sentry-mcp-cursor/dist/index.js"],
       "env": {
         "SENTRY_AUTH_TOKEN": "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",
         "SENTRY_ORG": "coflow",
@@ -5160,7 +5160,7 @@ MCP_SERVER_NAME=mcp-turso-memory
 MCP_SERVER_VERSION=1.0.0
 
 # Optional: Project Configuration
-PROJECT_NAME=context-engineering-intro
+PROJECT_NAME=context-engineering-turso
 PROJECT_VERSION=1.0.0
 ENVIRONMENT=development
 ```
@@ -6966,7 +6966,7 @@ A demonstração inclui:
 
 ### Estrutura do Projeto
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── mcp-turso/                 # Servidor MCP Turso
 │   ├── src/index.ts          # Código principal
 │   ├── package.json          # Dependências
@@ -8798,7 +8798,7 @@ MCP_SERVER_VERSION=1.0.0
 
 ### 📦 **Configurações do Projeto (ANTIGAS)**
 ```env
-PROJECT_NAME=context-engineering-intro
+PROJECT_NAME=context-engineering-turso
 PROJECT_VERSION=1.0.0
 ENVIRONMENT=development
 ```

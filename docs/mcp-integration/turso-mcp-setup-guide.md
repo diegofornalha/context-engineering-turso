@@ -13,7 +13,7 @@ O servidor MCP Turso está **configurado e funcionando** no Claude Code!
 claude mcp list
 
 # Resultado:
-mcp-turso-cloud: node /Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/index.js - ✓ Connected
+mcp-turso-cloud: node /Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/index.js - ✓ Connected
 ```
 
 ## 🔧 Como Foi Configurado
@@ -27,7 +27,7 @@ npm run build
 
 ### 2. Adição ao Claude Code
 ```bash
-claude mcp add mcp-turso-cloud node /Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/index.js \
+claude mcp add mcp-turso-cloud node /Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/index.js \
   --env TURSO_API_TOKEN="seu-turso-api-token" \
   --env TURSO_ORGANIZATION="sua-organizacao" \
   --env TURSO_DEFAULT_DATABASE="seu-database-padrao"
@@ -66,7 +66,7 @@ claude mcp remove mcp-turso-cloud
 
 2. Adicione novamente com suas credenciais reais:
 ```bash
-claude mcp add mcp-turso-cloud node /Users/agents/Desktop/context-engineering-intro/mcp-turso/dist/index.js \
+claude mcp add mcp-turso-cloud node /Users/agents/Desktop/context-engineering-turso/mcp-turso/dist/index.js \
   --env TURSO_API_TOKEN="seu-token-real-aqui" \
   --env TURSO_ORGANIZATION="sua-organizacao-real" \
   --env TURSO_DEFAULT_DATABASE="nome-do-database-padrao"

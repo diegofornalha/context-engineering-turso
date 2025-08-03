@@ -46,7 +46,7 @@ sql/
 ## 📁 Nova Estrutura
 
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── README.md            # ✅ Único .md principal
 ├── CLAUDE.md            # ✅ Regras Claude Code
 ├── .cursorrules         # ✅ Regras Cursor

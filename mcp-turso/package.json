@@ -1,7 +1,7 @@
 {
   "name": "@diegofornalha/mcp-turso-cloud",
   "version": "1.2.0",
-  "description": "MCP server for Turso Database with enhanced sync and documentation features (Fork from context-engineering-intro)",
+  "description": "MCP server for Turso Database with enhanced sync and documentation features (Fork from context-engineering-turso)",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

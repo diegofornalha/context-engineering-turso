@@ -24,7 +24,7 @@ def read_batch_file(filepath):
 
 def execute_batch(batch_number):
     """Executa um batch de inserts"""
-    batch_file = f"/Users/agents/Desktop/context-engineering-intro/docs/sync-batches/batch-{batch_number:02d}.sql"
+    batch_file = f"/Users/agents/Desktop/context-engineering-turso/docs/sync-batches/batch-{batch_number:02d}.sql"
     
     if not os.path.exists(batch_file):
         return False

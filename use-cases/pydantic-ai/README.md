@@ -8,8 +8,8 @@ Um template abrangente para construir agentes de IA de nível de produção usan
 
 ```bash
 # Clone o repositório de engenharia de contexto
-git clone https://github.com/coleam00/Context-Engineering-Intro.git
-cd Context-Engineering-Intro/use-cases/pydantic-ai
+git clone https://github.com/coleam00/context-engineering-turso.git
+cd context-engineering-turso/use-cases/pydantic-ai
 
 # 1. Copie este template para seu novo projeto
 python copy_template.py /caminho/para/meu-projeto-agente

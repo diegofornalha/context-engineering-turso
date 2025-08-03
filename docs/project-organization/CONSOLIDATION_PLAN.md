@@ -104,7 +104,7 @@ mv py-prp/*sync*.py scripts/archive/sync-scripts/
 ### Fase 5: Estrutura Final
 
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── README.md
 ├── CLAUDE.md
 ├── .cursorrules

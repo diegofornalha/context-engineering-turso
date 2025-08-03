@@ -8,7 +8,7 @@ from pathlib import Path
 
 def main():
     # Carregar dados de sincronização
-    sync_data_path = Path("/Users/agents/Desktop/context-engineering-intro/docs/.sync-data.json")
+    sync_data_path = Path("/Users/agents/Desktop/context-engineering-turso/docs/.sync-data.json")
     
     with open(sync_data_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -35,7 +35,7 @@ def main():
             print(f"  ... e mais {len(docs) - 3} documentos")
     
     # Criar script SQL simplificado
-    sql_file = Path("/Users/agents/Desktop/context-engineering-intro/docs/sync-organized-docs.sql")
+    sql_file = Path("/Users/agents/Desktop/context-engineering-turso/docs/sync-organized-docs.sql")
     
     with open(sql_file, 'w', encoding='utf-8') as f:
         f.write("-- Sincronização de documentos organizados\n\n")

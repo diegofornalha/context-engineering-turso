@@ -15,7 +15,7 @@ Um servidor MCP completo para integração com Sentry, oferecendo 27 ferramentas
 
 ### 1. Clone e Configure
 ```bash
-cd /Users/agents/Desktop/context-engineering-intro/mcp-sentry
+cd /Users/agents/Desktop/context-engineering-turso/mcp-sentry
 npm install
 npm run build
 ```

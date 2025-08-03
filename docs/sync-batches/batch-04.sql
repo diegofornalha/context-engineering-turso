@@ -190,7 +190,7 @@ MCP_SERVER_NAME=mcp-turso-memory
 MCP_SERVER_VERSION=1.0.0
 
 # Optional: Project Configuration
-PROJECT_NAME=context-engineering-intro
+PROJECT_NAME=context-engineering-turso
 PROJECT_VERSION=1.0.0
 ENVIRONMENT=development
 ```
@@ -2020,7 +2020,7 @@ A demonstração inclui:
 
 ### Estrutura do Projeto
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── mcp-turso/                 # Servidor MCP Turso
 │   ├── src/index.ts          # Código principal
 │   ├── package.json          # Dependências
@@ -3878,7 +3878,7 @@ MCP_SERVER_VERSION=1.0.0
 
 ### 📦 **Configurações do Projeto (ANTIGAS)**
 ```env
-PROJECT_NAME=context-engineering-intro
+PROJECT_NAME=context-engineering-turso
 PROJECT_VERSION=1.0.0
 ENVIRONMENT=development
 ```

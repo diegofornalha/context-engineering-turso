@@ -26,7 +26,7 @@ def split_sql_file(sql_file_path):
 
 def save_sql_parts(create_commands, insert_commands):
     """Salva comandos SQL em arquivos separados"""
-    output_dir = Path("/Users/agents/Desktop/context-engineering-intro/docs/sync-parts")
+    output_dir = Path("/Users/agents/Desktop/context-engineering-turso/docs/sync-parts")
     output_dir.mkdir(exist_ok=True)
     
     # Salvar comandos CREATE
@@ -87,7 +87,7 @@ Use mcp__turso__execute_read_only_query com a query "SELECT COUNT(*) as total, c
     print(f"📝 Instruções salvas em: {output_dir}/EXECUTE-SYNC.md")
 
 if __name__ == "__main__":
-    sql_file = Path("/Users/agents/Desktop/context-engineering-intro/docs/sync-to-turso.sql")
+    sql_file = Path("/Users/agents/Desktop/context-engineering-turso/docs/sync-to-turso.sql")
     
     print("🔄 Dividindo arquivo SQL em partes...")
     create_commands, insert_commands = split_sql_file(sql_file)

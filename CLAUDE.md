@@ -66,7 +66,7 @@ Este arquivo sincroniza com `.cursorrules` e define diretrizes específicas para
 
 ### 📂 Estrutura Obrigatória:
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── docs/           # TODA documentação (.md) - organizada em clusters
 │   ├── 01-getting-started/
 │   ├── 02-mcp-integration/

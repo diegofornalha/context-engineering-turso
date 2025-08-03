@@ -40,7 +40,7 @@ MCP_SERVER_VERSION=1.0.0
 
 ### 📦 **Configurações do Projeto (ANTIGAS)**
 ```env
-PROJECT_NAME=context-engineering-intro
+PROJECT_NAME=context-engineering-turso
 PROJECT_VERSION=1.0.0
 ENVIRONMENT=development
 ```

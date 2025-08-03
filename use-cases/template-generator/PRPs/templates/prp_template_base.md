@@ -129,7 +129,7 @@ use-cases/{technology-name}/
 
 ```bash
 # Estrutura base do framework para estender
-context-engineering-intro/
+context-engineering-turso/
 ├── README.md                    # Princípios core para adaptar
 ├── .claude/commands/            # Comandos base para especializar
 ├── PRPs/templates/prp_base.md   # Template base para estender

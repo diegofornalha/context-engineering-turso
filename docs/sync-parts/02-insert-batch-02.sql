@@ -869,7 +869,7 @@ Projeto do agente PydanticAI especializado:
 
 ### 📁 **Estrutura Atual:**
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── docs/                    # 25 arquivos .md
 ├── py-prp/                  # 13 arquivos .py
 ├── sql-db/                  # 6 arquivos (.sql + .db)

@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "sentry": {
-      "command": "/Users/agents/Desktop/context-engineering-intro/mcp-sentry/start.sh",
+      "command": "/Users/agents/Desktop/context-engineering-turso/mcp-sentry/start.sh",
       "args": [],
       "env": {
         "SENTRY_DSN": "https://782bbb46ddaa4e64a9a705e64f513985@o927801.ingest.us.sentry.io/5877334",

@@ -288,7 +288,7 @@ EOF
 
 if __name__ == "__main__":
     # Caminho dos documentos
-    docs_path = "/Users/agents/Desktop/context-engineering-intro/docs"
+    docs_path = "/Users/agents/Desktop/context-engineering-turso/docs"
     
     # Executar sincronização
     syncer = DocSyncTurso(docs_path)

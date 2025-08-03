@@ -554,7 +554,7 @@ Projeto do agente PydanticAI especializado:
 
 ### 📁 **Estrutura Atual:**
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── docs/                    # 25 arquivos .md
 ├── py-prp/                  # 13 arquivos .py
 ├── sql-db/                  # 6 arquivos (.sql + .db)
@@ -1423,7 +1423,7 @@ cd mcp-turso
 ## 🔧 Arquivos Criados
 
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── mcp-turso/                    # Servidor MCP Turso
 │   ├── src/index.ts             # Código principal
 │   ├── package.json             # Dependências

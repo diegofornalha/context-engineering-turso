@@ -20,7 +20,7 @@ Abra o arquivo e adicione/mescle com a configuração existente:
 {
   "mcpServers": {
     "sentry": {
-      "command": "/Users/agents/Desktop/context-engineering-intro/mcp-sentry/start.sh",
+      "command": "/Users/agents/Desktop/context-engineering-turso/mcp-sentry/start.sh",
       "args": [],
       "env": {
         "SENTRY_DSN": "ADICIONE_SUA_DSN_AQUI",
@@ -61,6 +61,6 @@ Use a ferramenta sentry_list_projects para listar os projetos
 3. **Verifique logs:** Procure por erros nos logs do Claude Desktop
 4. **Teste manualmente:**
    ```bash
-   cd /Users/agents/Desktop/context-engineering-intro/mcp-sentry
+   cd /Users/agents/Desktop/context-engineering-turso/mcp-sentry
    ./start.sh --dsn "sua-dsn-aqui"
    ```

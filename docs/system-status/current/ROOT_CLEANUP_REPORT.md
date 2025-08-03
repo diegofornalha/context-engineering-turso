@@ -28,7 +28,7 @@
 ## 📁 Estrutura Final da Raiz
 
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── README.md         # ✅ Único .md de documentação permitido
 ├── CLAUDE.md         # ✅ Sync com .cursorrules
 ├── .cursorrules      # ✅ Regras do Cursor

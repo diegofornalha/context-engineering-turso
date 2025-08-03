@@ -17,7 +17,7 @@ EOF
 
 #### Passo 2: Instalar no Claude Code
 ```bash
-cd /Users/agents/Desktop/context-engineering-intro/mcp-sentry
+cd /Users/agents/Desktop/context-engineering-turso/mcp-sentry
 ./add-to-claude-code.sh
 ```
 

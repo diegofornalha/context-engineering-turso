@@ -96,7 +96,7 @@ cd mcp-turso
 ## 🔧 Arquivos Criados
 
 ```
-context-engineering-intro/
+context-engineering-turso/
 ├── mcp-turso/                    # Servidor MCP Turso
 │   ├── src/index.ts             # Código principal
 │   ├── package.json             # Dependências

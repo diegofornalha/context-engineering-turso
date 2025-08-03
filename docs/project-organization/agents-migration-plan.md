@@ -81,7 +81,7 @@ O arquivo `agents.turso_specialist` não existe em nenhum dos diretórios agents
 
 ```bash
 # 1. Backup
-cp -r /Users/agents/Desktop/context-engineering-intro/agents /Users/agents/Desktop/context-engineering-intro/agents.backup
+cp -r /Users/agents/Desktop/context-engineering-turso/agents /Users/agents/Desktop/context-engineering-turso/agents.backup
 
 # 2. Mesclar settings.py
 # (manual - requer análise das diferenças)
@@ -90,10 +90,10 @@ cp -r /Users/agents/Desktop/context-engineering-intro/agents /Users/agents/Deskt
 # Usar sed ou ferramenta similar para substituir em massa
 
 # 4. Remover diretório antigo
-rm -rf /Users/agents/Desktop/context-engineering-intro/agents
+rm -rf /Users/agents/Desktop/context-engineering-turso/agents
 
 # 5. Testar
-cd /Users/agents/Desktop/context-engineering-intro/prp-agent
+cd /Users/agents/Desktop/context-engineering-turso/prp-agent
 python cli.py
 ```
 
