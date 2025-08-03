@@ -111,15 +111,14 @@ def main():
     print(f"Script SQL gerado: {output_file}")
     print(f"Total de documentos a inserir: {len(sql_commands)}")
     
-    # Pergunta se deseja executar
-    response = input("\nDeseja executar o script agora? (s/n): ")
-    if response.lower() == 's':
-        try:
-            cmd = f'turso db shell context-memory < {output_file}'
-            subprocess.run(cmd, shell=True, check=True)
-            print("✅ Documentos inseridos com sucesso!")
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Erro ao executar: {e}")
+    # Executa automaticamente
+    print("\nExecutando script SQL...")
+    try:
+        cmd = f'turso db shell context-memory < {output_file}'
+        subprocess.run(cmd, shell=True, check=True)
+        print("✅ Documentos inseridos com sucesso!")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Erro ao executar: {e}")
 
 if __name__ == "__main__":
     main()
