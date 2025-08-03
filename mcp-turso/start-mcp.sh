@@ -18,6 +18,8 @@ echo "TURSO_AUTH_TOKEN: ${TURSO_AUTH_TOKEN:0:20}..."
 echo "TURSO_ORGANIZATION: $TURSO_ORGANIZATION"
 echo "TURSO_DEFAULT_DATABASE: $TURSO_DEFAULT_DATABASE"
 
-# Iniciar o MCP
-echo "Iniciando MCP Turso..."
-npm start 
+# Mudar para o diretório correto
+cd "$(dirname "$0")"
+
+# Iniciar o MCP diretamente
+exec node dist/index.js 
