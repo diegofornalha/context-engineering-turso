@@ -812,13 +812,13 @@ class TursoMemorySystem:
         except ImportError:
             # Fallback para demonstração
             import sqlite3
-            self.db_path = "memory_demo.db"
+            self_path = "memory_demo"
             self.use_cloud = False
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
+            conn = self.client.execute
+            
         
         # Criar tabelas (mesma estrutura do Turso)
-        cursor.execute("""
+        self.client.execute("""
             CREATE TABLE IF NOT EXISTS conversations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id TEXT NOT NULL,
@@ -831,7 +831,7 @@ class TursoMemorySystem:
             )
         """)
         
-        cursor.execute("""
+        self.client.execute("""
             CREATE TABLE IF NOT EXISTS knowledge_base (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 topic TEXT NOT NULL,
@@ -844,7 +844,7 @@ class TursoMemorySystem:
             )
         """)
         
-        cursor.execute("""
+        self.client.execute("""
             CREATE TABLE IF NOT EXISTS tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
@@ -858,8 +858,8 @@ class TursoMemorySystem:
             )
         """)
         
-        conn.commit()
-        conn.close()
+        
+        
     
     def add_conversation(self, session_id: str, message: str, response: str = None, 
                         user_id: str = None, context: str = None) -> int:
@@ -871,24 +871,24 @@ class TursoMemorySystem:
             """, [session_id, user_id, message, response, context])
             return result.lastInsertRowid
         else:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
+            conn = self.client.execute
+            
         
-        cursor.execute("""
+        self.client.execute("""
             INSERT INTO conversations (session_id, user_id, message, response, context)
             VALUES (?, ?, ?, ?, ?)
         """, (session_id, user_id, message, response, context))
         
-        conversation_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
+        conversation_id = result.lastInsertRowid
+        
+        
         
         return conversation_id
     
     def get_conversations(self, session_id: str = None, limit: int = 10) -> List[Dict]:
         """Recupera conversas da memória"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        conn = self.client.execute
+        
         
         query = "SELECT * FROM conversations"
         params = []
@@ -900,8 +900,8 @@ class TursoMemorySystem:
         query += " ORDER BY timestamp DESC LIMIT ?"
         params.append(limit)
         
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
+        self.client.execute(query, params)
+        rows = result.rows
         
         conversations = []
         for row in rows:
@@ -916,30 +916,30 @@ class TursoMemorySystem:
                 'metadata': row[7]
             })
         
-        conn.close()
+        
         return conversations
     
     def add_knowledge(self, topic: str, content: str, source: str = None, 
                      tags: str = None) -> int:
         """Adiciona conhecimento à base de conhecimento"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        conn = self.client.execute
         
-        cursor.execute("""
+        
+        self.client.execute("""
             INSERT INTO knowledge_base (topic, content, source, tags)
             VALUES (?, ?, ?, ?)
         """, (topic, content, source, tags))
         
-        knowledge_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
+        knowledge_id = result.lastInsertRowid
+        
+        
         
         return knowledge_id
     
     def search_knowledge(self, query: str, tags: str = None, limit: int = 10) -> List[Dict]:
         """Pesquisa na base de conhecimento"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        conn = self.client.execute
+        
         
         search_query = "SELECT * FROM knowledge_base WHERE topic LIKE ? OR content LIKE ?"
         params = [f"%{query}%", f"%{query}%"]
@@ -951,8 +951,8 @@ class TursoMemorySystem:
         search_query += " ORDER BY priority DESC, created_at DESC LIMIT ?"
         params.append(limit)
         
-        cursor.execute(search_query, params)
-        rows = cursor.fetchall()
+        self.client.execute(search_query, params)
+        rows = result.rows
         
         knowledge = []
         for row in rows:
@@ -967,30 +967,30 @@ class TursoMemorySystem:
                 'priority': row[7]
             })
         
-        conn.close()
+        
         return knowledge
     
     def add_task(self, title: str, description: str = None, priority: int = 1,
                  context: str = None) -> int:
         """Adiciona uma tarefa"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        conn = self.client.execute
         
-        cursor.execute("""
+        
+        self.client.execute("""
             INSERT INTO tasks (title, description, priority, context)
             VALUES (?, ?, ?, ?)
         """, (title, description, priority, context))
         
-        task_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
+        task_id = result.lastInsertRowid
+        
+        
         
         return task_id
     
     def get_tasks(self, status: str = None, limit: int = 10) -> List[Dict]:
         """Recupera tarefas"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        conn = self.client.execute
+        
         
         query = "SELECT * FROM tasks"
         params = []
@@ -1002,8 +1002,8 @@ class TursoMemorySystem:
         query += " ORDER BY priority DESC, created_at DESC LIMIT ?"
         params.append(limit)
         
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
+        self.client.execute(query, params)
+        rows = result.rows
         
         tasks = []
         for row in rows:
@@ -1019,7 +1019,7 @@ class TursoMemorySystem:
                 'assigned_to': row[8]
             })
         
-        conn.close()
+        
         return tasks
 ```
 
@@ -1301,7 +1301,7 @@ build/
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs
 ```
 
 ### 8.3 .env.example

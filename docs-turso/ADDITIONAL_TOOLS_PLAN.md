@@ -107,7 +107,7 @@
 ```typescript
 // Ferramentas de replicação
 {
-  name: 'create_embedded_replica',
+  name: 'sync_cloud_database',
   description: 'Create an embedded replica for local development',
   inputSchema: {
     type: 'object',
