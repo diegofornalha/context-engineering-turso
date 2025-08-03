@@ -55,16 +55,21 @@ responda sempre em pt br
 
 ### 📁 Organização de Arquivos
 - **Documentação**: Coloque todos os arquivos de documentação (`.md`) na pasta `docs/`
+- **Documentação Específica de Agentes**: 
+  - `turso-agent/docs-turso/` - Documentação do Turso Agent
+  - `prp-agent/docs-prp/` - Documentação do PRP Agent
 - **Scripts SQL**: Coloque todos os arquivos SQL na pasta `sql-db/`
 - **Scripts Python**: Coloque todos os arquivos Python na pasta `py-prp/`
 - **Evite arquivos na raiz**: Use as pastas específicas para manter organização
 - **Estrutura recomendada**:
   ```
-  docs/           # Documentação (.md)
-  sql-db/         # Scripts SQL (.sql)
-  py-prp/         # Scripts Python (.py)
-  mcp-*/          # Servidores MCP
-  use-cases/      # Casos de uso
+  docs/                    # Documentação geral (.md)
+  turso-agent/docs-turso/  # Documentação específica Turso Agent
+  prp-agent/docs-prp/      # Documentação específica PRP Agent
+  sql-db/                  # Scripts SQL (.sql)
+  py-prp/                  # Scripts Python (.py)
+  mcp-*/                   # Servidores MCP
+  use-cases/               # Casos de uso
   ```
 
 ### 🧠 Regras de Comportamento da IA

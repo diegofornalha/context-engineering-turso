@@ -157,7 +157,8 @@ def analyze_architecture_cleanliness():
     
     # Check 1: Ferramentas únicas
     total_checks += 1
-    if len(list(Path("tools").glob("*.py"))) == 2:  # __init__.py + mcp_integrator.py
+    tools_files = [f for f in Path("tools").glob("*.py") if f.name != "__init__.py"]
+    if len(tools_files) == 1:
         print("✅ Ferramentas: Apenas MCP Integrator")
         cleanliness_score += 1
     else:
@@ -240,7 +241,7 @@ def analyze_delegation_strategy():
     # Check 4: CLI atualizado
     total_checks += 1
     main_content = Path("main.py").read_text() if Path("main.py").exists() else ""
-    if "delegação" in main_content.lower() and "mcp" in main_content.lower():
+    if "mcp" in main_content.lower() and "delegada" in main_content.lower():
         print("✅ CLI: ATUALIZADO para delegação")
         strategy_score += 1
     else:

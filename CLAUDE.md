@@ -59,7 +59,10 @@ Este arquivo sincroniza com `.cursorrules` e define diretrizes específicas para
 
 ### ⚠️ REGRA CRÍTICA: Evite arquivos .md na raiz!
 
-- **Documentação**: Coloque TODOS os arquivos de documentação (`.md`) na pasta `docs/`
+- **Documentação Geral**: Coloque TODOS os arquivos de documentação (`.md`) na pasta `docs/`
+- **Documentação Específica de Agentes**: 
+  - `turso-agent/docs-turso/` - Documentação específica do Turso Agent
+  - `prp-agent/docs-prp/` - Documentação específica do PRP Agent
 - **Scripts SQL**: Coloque todos os arquivos SQL na pasta `sql-db/`
 - **Scripts Python**: Coloque todos os arquivos Python na pasta `py-prp/`
 - **Evite arquivos na raiz**: Use as pastas específicas para manter organização
@@ -67,7 +70,7 @@ Este arquivo sincroniza com `.cursorrules` e define diretrizes específicas para
 ### 📂 Estrutura Obrigatória:
 ```
 context-engineering-turso/
-├── docs/           # TODA documentação (.md) - organizada em clusters
+├── docs/                    # Documentação geral (.md) - organizada em clusters
 │   ├── 01-getting-started/
 │   ├── 02-mcp-integration/
 │   ├── 03-turso-database/
@@ -76,16 +79,19 @@ context-engineering-turso/
 │   ├── 06-system-status/
 │   ├── 07-project-organization/
 │   └── 08-reference/
-├── sql-db/         # Scripts SQL (.sql) e bancos (.db)
-├── py-prp/         # Scripts Python (.py)
-├── agents/         # Implementação do agente PRP
-├── prp-agent/      # Template para criar agentes
-├── mcp-*/          # Servidores MCP
-├── scripts/        # Scripts temporários/manutenção
-├── use-cases/      # Casos de uso
-├── README.md       # Único .md permitido na raiz
-├── CLAUDE.md       # Este arquivo (sync com .cursorrules)
-└── .cursorrules    # Regras para Cursor
+├── turso-agent/
+│   └── docs-turso/         # Documentação específica Turso Agent
+├── prp-agent/
+│   └── docs-prp/           # Documentação específica PRP Agent
+├── sql-db/                 # Scripts SQL (.sql) e bancos (.db)
+├── py-prp/                 # Scripts Python (.py)
+├── agents/                 # Implementação do agente PRP
+├── mcp-*/                  # Servidores MCP
+├── scripts/                # Scripts temporários/manutenção
+├── use-cases/              # Casos de uso
+├── README.md               # Único .md permitido na raiz
+├── CLAUDE.md               # Este arquivo (sync com .cursorrules)
+└── .cursorrules            # Regras para Cursor
 ```
 
 ### 🚫 Arquivos NÃO permitidos na raiz:
