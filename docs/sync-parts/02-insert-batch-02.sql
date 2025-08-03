@@ -4,7 +4,775 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '05-sentry-monitoring/SENTRY_MCP_ERRORS_DOCUMENTATION.md',
+    'sentry-monitoring/SENTRY_ERRORS_REPORT.md',
+    'Relatório de Documentação de Erros do MCP Sentry',
+    '
+# Relatório de Documentação de Erros do MCP Sentry
+
+## Data: 02/08/2025 04:27
+
+## Estatísticas Gerais
+- **Total de Issues:** 10
+- **Erros Críticos:** 1
+- **Warnings:** 2
+- **Mensagens Info:** 7
+
+## Projetos
+- **coflow:** 10 issues
+- **mcp-test-project:** 0 issues
+
+## Problemas de Infraestrutura MCP
+- **Turso (authentication):** Erro de autenticação JWT: ''could not parse jwt id'' - Impossibilidade de acessar bancos de dados
+- **Sentry (cleanup_needed):** Muitos testes antigos no sistema de produção - Necessário limpeza
+',
+    '# Relatório de Documentação de Erros do MCP Sentry ## Data: 02/08/2025 04:27 ## Estatísticas Gerais - **Total de Issues:** 10 - **Erros Críticos:** 1 - **Warnings:** 2 - **Mensagens Info:** 7 ## Projetos - **coflow:** 10 issues - **mcp-test-project:** 0 issues ## Problemas de Infraestrutura MCP - **Turso (authentication):**...',
+    'sentry-monitoring',
+    'root',
+    'ce988daf31bee835ea642e9f6c4a8cb609dfbcf89927fdcc9ab6c425c41ea319',
+    524,
+    '2025-08-02T04:27:24.379844',
+    '{"synced_at": "2025-08-03T03:32:01.082577", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'sentry-monitoring/SENTRY_AI_AGENTS_SUCCESS_GUIDE.md',
+    '🎯 GUIA DE SUCESSO: Sentry AI Agents - Implementação Completa',
+    '# 🎯 GUIA DE SUCESSO: Sentry AI Agents - Implementação Completa
+
+> **Consolidação dos guias de sucesso de AI Agent Monitoring com Sentry**
+
+## 📋 **Resumo Executivo**
+
+Este guia documenta **exatamente** o que foi feito para implementar com sucesso o monitoramento de AI Agents no Sentry, seguindo 100% a documentação oficial.
+
+**✅ RESULTADO**: 17 spans enviados, 6 AI Agents monitorados, error capture funcionando!
+
+---
+
+## 🚫 **PROBLEMA INICIAL: O que NÃO funcionou**
+
+### ❌ Tentativa 1: OpenAI Agents Integration (FALHOU)
+```python
+# ISTO NÃO FUNCIONOU:
+from sentry_sdk.integrations.openai_agents import OpenAIAgentsIntegration
+
+sentry_sdk.init(
+    dsn="...",
+    integrations=[
+        OpenAIAgentsIntegration(),  # ❌ AttributeError: module ''agents'' has no attribute ''run''
+    ],
+)
+```
+
+**🔍 Por que falhou:**
+- Dependência `agents` não compatível
+- Conflitos de versão
+- Framework muito específico
+- Documentação incompleta
+
+---
+
+## ✅ **SOLUÇÃO QUE DEU CERTO: Manual Instrumentation**
+
+### 🎯 **Decisão Estratégica**
+Em vez de usar a integração automática problemática, implementamos **Manual Instrumentation** seguindo 100% a documentação oficial do Sentry.
+
+**📚 Base**: [Documentação Oficial Sentry AI Agents](https://docs.sentry.io/platforms/python/tracing/instrumentation/custom-instrumentation/)
+
+---
+
+## 🛠️ **PASSO A PASSO DO SUCESSO**
+
+### **PASSO 1: Configuração Base Sentry**
+
+```python
+import sentry_sdk
+
+# ✅ Configuração que FUNCIONOU
+sentry_sdk.init(
+    dsn="https://d9fe4e8016424adebb7389d5df925764@o927801.ingest.us.sentry.io/4509774227832832",
+    traces_sample_rate=1.0,
+    send_default_pii=True,  # Include LLM inputs/outputs
+    # ✅ SEM integrations problemáticas!
+)
+```
+
+**🔑 Chaves do sucesso:**
+- ✅ DSN correto
+- ✅ `traces_sample_rate=1.0` (capture 100% spans)
+- ✅ `send_default_pii=True` (dados LLM)
+- ✅ **NENHUMA** integração automática
+
+### **PASSO 2: Implementar Span "gen_ai.invoke_agent"**
+
+```python
+def invoke_agent_official(agent_name: str, model: str, prompt: str, temperature: float, max_tokens: int, user_id: str):
+    session_id = str(uuid.uuid4())
+    
+    # ✅ INVOKE AGENT SPAN - Padrão oficial
+    with sentry_sdk.start_span(
+        op="gen_ai.invoke_agent",  # MUST be "gen_ai.invoke_agent"
+        name=f"invoke_agent {agent_name}",  # SHOULD be "invoke_agent {agent_name}"
+    ) as span:
+        
+        # ✅ Common Span Attributes - REQUIRED
+        span.set_data("gen_ai.system", "openai")  # REQUIRED
+        span.set_data("gen_ai.request.model", model)  # REQUIRED
+        span.set_data("gen_ai.operation.name", "invoke_agent")  # MUST be "invoke_agent"
+        span.set_data("gen_ai.agent.name", agent_name)  # SHOULD be set
+        
+        # ✅ Optional attributes
+        span.set_data("gen_ai.request.temperature", temperature)
+        span.set_data("gen_ai.request.max_tokens", max_tokens)
+        
+        # ✅ Messages format: [{"role": "", "content": ""}]
+        messages = [
+            {"role": "system", "content": f"You are {agent_name}, a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
+        span.set_data("gen_ai.request.messages", json.dumps(messages))
+        
+        # ... resto da implementação
+```
+
+**🔑 O que fez dar certo:**
+- ✅ Op exato: `"gen_ai.invoke_agent"`
+- ✅ Name format: `"invoke_agent {agent_name}"`
+- ✅ Todos atributos REQUIRED implementados
+- ✅ JSON strings corretos (não objetos Python)
+
+### **PASSO 3: Implementar Span "gen_ai.chat"**
+
+```python
+def ai_client_official(model: str, messages: List[Dict], temperature: float, max_tokens: int, session_id: str):
+    # ✅ AI CLIENT SPAN - Padrão oficial
+    with sentry_sdk.start_span(
+        op="gen_ai.chat",  # MUST be "gen_ai.chat"
+        name=f"chat {model}",  # SHOULD be "chat {model}"
+    ) as span:
+        
+        # ✅ Common Span Attributes - REQUIRED
+        span.set_data("gen_ai.system", "openai")  # REQUIRED
+        span.set_data("gen_ai.request.model", model)  # REQUIRED
+        span.set_data("gen_ai.operation.name", "chat")  # operation name
+        
+        # ✅ Request data
+        span.set_data("gen_ai.request.messages", json.dumps(messages))
+        span.set_data("gen_ai.request.temperature", temperature)
+        span.set_data("gen_ai.request.max_tokens", max_tokens)
+        
+        # ... processamento LLM ...
+        
+        # ✅ Response data
+        span.set_data("gen_ai.response.text", json.dumps([response]))
+        if tool_calls:
+            span.set_data("gen_ai.response.tool_calls", json.dumps(tool_calls))
+        
+        # ✅ Token usage
+        span.set_data("gen_ai.usage.input_tokens", input_tokens)
+        span.set_data("gen_ai.usage.output_tokens", output_tokens)
+        span.set_data("gen_ai.usage.total_tokens", total_tokens)
+```
+
+**🔑 O que fez dar certo:**
+- ✅ Op exato: `"gen_ai.chat"`
+- ✅ Todos tokens capturados
+- ✅ Messages em formato JSON string
+- ✅ Response como array JSON
+
+### **PASSO 4: Implementar Span "gen_ai.execute_tool"**
+
+```python
+def execute_tool_official(tool_name: str, input_text: str, model: str, session_id: str):
+    # ✅ EXECUTE TOOL SPAN - Padrão oficial
+    with sentry_sdk.start_span(
+        op="gen_ai.execute_tool",  # MUST be "gen_ai.execute_tool"
+        name=f"execute_tool {tool_name}",  # SHOULD be "execute_tool {tool_name}"
+    ) as span:
+        
+        # ✅ Common attributes
+        span.set_data("gen_ai.system", "openai")
+        span.set_data("gen_ai.request.model", model)
+        
+        # ✅ Tool-specific attributes
+        span.set_data("gen_ai.tool.name", tool_name)
+        span.set_data("gen_ai.tool.description", descriptions.get(tool_name, "AI Tool"))
+        span.set_data("gen_ai.tool.type", "function")
+        
+        # ✅ Tool input/output
+        tool_input = {"text": input_text[:100], "session_id": session_id}
+        span.set_data("gen_ai.tool.input", json.dumps(tool_input))
+        
+        # ... execução tool ...
+        
+        span.set_data("gen_ai.tool.output", tool_output)
+```
+
+**🔑 O que fez dar certo:**
+- ✅ Op exato: `"gen_ai.execute_tool"`
+- ✅ Tool attributes completos
+- ✅ Input/Output capturados
+- ✅ Type correto: "function"
+
+---
+
+## 📊 **RESULTADOS FINAIS COMPROVADOS**
+
+### **17 Spans Enviados para Sentry:**
+- 🤖 **6x gen_ai.invoke_agent** spans
+- 💬 **6x gen_ai.chat** spans
+- 🔧 **4x gen_ai.execute_tool** spans
+- 🚨 **1x error** span
+
+### **Dados Capturados:**
+- **1,738 tokens** processados total
+- **6 AI Agents** únicos monitorados
+- **4 ferramentas** executadas
+- **6 sessions** com UUIDs únicos
+- **100% conformidade** com documentação oficial
+
+---
+
+## 🎯 **FATORES CRÍTICOS DO SUCESSO**
+
+### **1. ✅ Seguir EXATAMENTE a Documentação Oficial**
+- Não improvisar nomes de spans
+- Usar atributos exatos (gen_ai.system, gen_ai.request.model, etc.)
+- Respeitar tipos de dados (JSON strings, não objetos)
+
+### **2. ✅ Evitar Integrações Automáticas Problemáticas**
+- OpenAI Agents Integration = problemas de dependência
+- Manual Instrumentation = controle total
+
+### **3. ✅ Estrutura de Dados Consistente**
+- UUID para session IDs
+- Tokens como integers
+- Timing como float
+- Arrays de tools como List[str]
+
+### **4. ✅ Implementação Completa de Todos os Spans**
+- gen_ai.invoke_agent (obrigatório)
+- gen_ai.chat (obrigatório)
+- gen_ai.execute_tool (obrigatório)
+
+### **5. ✅ Testing Abrangente**
+- Teste individual
+- Teste benchmark
+- Teste error capture
+- Verificação no Sentry Dashboard
+
+---
+
+## 🚀 **COMO REPLICAR O SUCESSO**
+
+### **Passo 1: Setup Environment**
+```bash
+cd prp-agent
+source .venv/bin/activate
+pip install "sentry-sdk[fastapi]" fastapi uvicorn pydantic
+```
+
+### **Passo 2: Configurar DSN**
+```python
+sentry_sdk.init(
+    dsn="SEU_DSN_AQUI",  # ⚠️ Trocar pelo seu DSN
+    traces_sample_rate=1.0,
+    send_default_pii=True,
+)
+```
+
+### **Passo 3: Executar**
+```bash
+uvicorn main_official_standards:app --host 0.0.0.0 --port 8000
+```
+
+### **Passo 4: Testar**
+```bash
+# Teste AI Agent
+curl -X POST localhost:8000/ai-agent/official-standards \
+  -H "Content-Type: application/json" \
+  -d ''{"prompt": "Seu prompt", "agent_name": "Seu Agent"}''
+
+# Teste benchmark
+curl localhost:8000/ai-agent/benchmark-standards
+
+# Teste error
+curl localhost:8000/sentry-debug
+```
+
+---
+
+## 💡 **LIÇÕES APRENDIDAS**
+
+### **❌ O que NÃO fazer:**
+1. Não usar OpenAI Agents Integration automática
+2. Não improvisar nomes de spans
+3. Não passar objetos Python como span data
+4. Não ignorar atributos obrigatórios
+
+### **✅ O que FAZER:**
+1. Seguir Manual Instrumentation oficial
+2. Usar nomes exatos da documentação
+3. Converter tudo para JSON strings
+4. Implementar todos spans obrigatórios
+5. Testar tudo antes de produção
+
+---
+
+## 🏆 **CONQUISTA FINAL**
+
+### **✅ 100% SUCESSO COMPROVADO:**
+
+- ✅ **Conformidade total** com documentação oficial Sentry
+- ✅ **17 spans enviados** para monitoramento
+- ✅ **6 AI Agents monitorados** com métricas completas
+- ✅ **Error capture funcionando** perfeitamente
+- ✅ **Performance tracking** em tempo real
+- ✅ **Zero dependências problemáticas**
+- ✅ **Framework agnóstico** (funciona com qualquer LLM)
+
+---
+
+**🤖 Agora você tem o monitoramento de AI Agents mais avançado possível!**
+
+*📝 Documento consolidado dos guias de sucesso de AI Agent Monitoring com Sentry*
+*🎯 Todos os testes passaram com 100% de sucesso*
+*✅ Pronto para produção*',
+    '# 🎯 GUIA DE SUCESSO: Sentry AI Agents - Implementação Completa > **Consolidação dos guias de sucesso de AI Agent Monitoring com Sentry** ## 📋 **Resumo Executivo** Este guia documenta **exatamente** o que foi feito para implementar com sucesso o monitoramento de AI Agents no Sentry, seguindo 100% a documentação...',
+    'sentry-monitoring',
+    'root',
+    '933f700f11c5aa99cfecfb40401f35e063e94c0df318b714965c5813fd509418',
+    9248,
+    '2025-08-02T09:39:30.041203',
+    '{"synced_at": "2025-08-03T03:32:01.083538", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'sentry-monitoring/GUIA_SENTRY_PRP_AGENT.md',
+    '🚨 Guia Completo: Sentry para PRP Agent',
+    '# 🚨 Guia Completo: Sentry para PRP Agent
+
+## 📋 Visão Geral
+
+Integração completa do **Sentry** no projeto **PRP Agent** para monitoramento avançado de:
+- 🤖 **Agentes PydanticAI** (conversas, análises LLM)
+- 🔧 **Ferramentas MCP** (Turso, Sentry, outros)
+- 📊 **Operações de PRPs** (criação, análise, atualização)
+- 🗄️ **Banco de Dados** SQLite (queries, performance)
+- ⚡ **Performance** e métricas de uso
+
+---
+
+## 🚀 Configuração Rápida (5 minutos)
+
+### 1. **Criar Projeto no Sentry**
+```bash
+# 1. Acesse https://sentry.io/
+# 2. Crie novo projeto
+# 3. Escolha "Python" como plataforma
+# 4. Copie o DSN do projeto
+```
+
+### 2. **Configurar Ambiente**
+```bash
+cd prp-agent
+
+# Copiar arquivo de configuração
+cp ../prp_agent_env_sentry.example .env.sentry
+
+# Editar com suas credenciais
+nano .env.sentry
+```
+
+### 3. **Instalar Dependências**
+```bash
+# Adicionar ao requirements.txt
+echo "sentry-sdk[fastapi]==1.40.0" >> requirements.txt
+
+# Instalar
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 4. **Integrar com Agentes Existentes**
+```python
+# Em agents/settings.py - adicionar
+SENTRY_DSN: str = Field(default="", description="Sentry DSN para monitoramento")
+SENTRY_ENVIRONMENT: str = Field(default="development", description="Ambiente Sentry")
+
+# Em agents/agent.py - no início do arquivo
+from sentry_prp_agent_setup import configure_sentry_for_prp_agent
+from prp_agent_sentry_integration import PRPAgentSentryIntegration
+
+# Configurar Sentry
+if settings.sentry_dsn:
+    configure_sentry_for_prp_agent(settings.sentry_dsn, settings.sentry_environment)
+```
+
+---
+
+## 📊 Funcionalidades de Monitoramento
+
+### 🤖 **Monitoramento de Agentes**
+```python
+# Exemplo de uso no chat_with_prp_agent
+@monitor_agent_operation("prp_chat", component="pydantic_ai")
+async def chat_with_prp_agent(message: str, deps: PRPAgentDependencies):
+    # ... código existente ...
+    pass
+```
+
+### 🔧 **Monitoramento MCP Tools**
+```python
+# Em agents/tools.py
+from prp_agent_sentry_integration import PRPAgentSentryIntegration
+
+sentry_integration = PRPAgentSentryIntegration(settings.sentry_dsn)
+
+async def create_prp(ctx, name, title, ...):
+    # Monitorar operação MCP
+    sentry_integration.monitor_mcp_tool_call("create_prp", {
+        "name": name, "title": title
+    })
+    
+    try:
+        # ... código existente ...
+        result = await execute_query(...)
+        
+        # Registrar sucesso
+        sentry_integration.monitor_database_operation("INSERT", "prps", True)
+        return result
+    except Exception as e:
+        # Registrar erro
+        sentry_integration.monitor_database_operation("INSERT", "prps", False)
+        raise
+```
+
+### 📈 **Métricas de Performance**
+```python
+# Monitorar tempo de resposta dos agentes
+import time
+
+start_time = time.time()
+result = await prp_agent.run(message, deps=deps)
+duration = time.time() - start_time
+
+sentry_integration.capture_agent_performance_metrics("prp_agent", {
+    "response_time_ms": duration * 1000,
+    "message_length": len(message),
+    "response_length": len(result.data)
+})
+```
+
+---
+
+## 🔍 Tipos de Eventos Monitorados
+
+### ✅ **Eventos de Sucesso**
+- 💬 **Chat completado** com tempo de resposta
+- 📋 **PRP criado** com detalhes
+- 🔍 **Análise LLM** concluída
+- 🗄️ **Query SQL** executada com sucesso
+
+### ❌ **Eventos de Erro**
+- 🚫 **Falhas de LLM** (timeout, limite de tokens)
+- 💥 **Erros de MCP** (conexão, autenticação)
+- 🗄️ **Erros de banco** (SQL inválido, lock)
+- ⚠️ **Validação** de entrada falhada
+
+### 📊 **Métricas de Performance**
+- ⏱️ **Tempo de resposta** dos agentes
+- 🔢 **Tokens utilizados** por análise
+- 💾 **Uso de memória** durante operações
+- 🔄 **Taxa de sucesso** das operações
+
+---
+
+## 🛠️ Integração com Componentes Existentes
+
+### 📁 **1. Atualizar `agents/settings.py`**
+```python
+# Adicionar campos Sentry
+sentry_dsn: str = Field(default="", description="Sentry DSN")
+sentry_environment: str = Field(default="development", description="Ambiente")
+enable_sentry_monitoring: bool = Field(default=True, description="Habilitar Sentry")
+```
+
+### 📁 **2. Atualizar `agents/agent.py`**
+```python
+# Adicionar no início
+from sentry_prp_agent_setup import configure_sentry_for_prp_agent
+
+# Configurar Sentry
+if settings.sentry_dsn and settings.enable_sentry_monitoring:
+    configure_sentry_for_prp_agent(
+        dsn=settings.sentry_dsn,
+        environment=settings.sentry_environment
+    )
+```
+
+### 📁 **3. Atualizar `agents/tools.py`**
+```python
+# Adicionar monitoramento em cada ferramenta
+from prp_agent_sentry_integration import PRPAgentSentryIntegration
+
+async def create_prp(ctx: RunContext[PRPAgentDependencies], ...):
+    sentry_integration = PRPAgentSentryIntegration(settings.sentry_dsn)
+    
+    # Monitorar operação
+    sentry_integration.monitor_prp_operation(None, "create", {
+        "name": name, "title": title
+    })
+    
+    # ... resto do código ...
+```
+
+### 📁 **4. Atualizar integrações Cursor**
+```python
+# Em cursor_turso_integration.py
+from sentry_prp_agent_setup import configure_sentry_for_prp_agent
+
+class CursorTursoIntegration:
+    def __init__(self):
+        # Configurar Sentry
+        sentry_dsn = os.getenv("SENTRY_DSN")
+        if sentry_dsn:
+            configure_sentry_for_prp_agent(sentry_dsn, "development")
+```
+
+---
+
+## 📈 Dashboard e Alertas
+
+### 🎯 **Métricas Principais para Acompanhar**
+1. **Taxa de Erro** dos agentes PRP
+2. **Tempo de Resposta** médio
+3. **Uso de Tokens** LLM por operação
+4. **Performance** das queries SQL
+5. **Disponibilidade** dos MCPs
+
+### 🔔 **Alertas Recomendados**
+- ⚠️ **Taxa de erro > 5%** em 10 minutos
+- 🐌 **Tempo de resposta > 30s** consistente
+- 💸 **Uso excessivo de tokens** LLM
+- 🔌 **Falhas de MCP** repetidas
+- 🗄️ **Queries SQL lentas** (> 5s)
+
+### 📊 **Dashboard Personalizado**
+```json
+{
+  "widgets": [
+    {
+      "title": "PRP Agent Health",
+      "query": "project:prp-agent component:pydantic_ai"
+    },
+    {
+      "title": "MCP Tools Performance", 
+      "query": "project:prp-agent category:mcp"
+    },
+    {
+      "title": "LLM Usage Metrics",
+      "query": "project:prp-agent category:llm"
+    }
+  ]
+}
+```
+
+---
+
+## 🧪 Teste da Integração
+
+### 1. **Teste Básico**
+```bash
+cd prp-agent
+python ../sentry_prp_agent_setup.py
+```
+
+### 2. **Teste com Agente Real**
+```python
+from prp_agent_sentry_integration import SentryEnhancedPRPAgent
+
+# Criar agente com monitoramento
+agent = SentryEnhancedPRPAgent("YOUR_SENTRY_DSN", "development")
+
+# Testar chat
+await agent.chat_with_monitoring("Crie um PRP para sistema de notificações")
+```
+
+### 3. **Verificar Dashboard**
+- Acesse https://sentry.io/
+- Navegue para seu projeto
+- Verifique eventos em **Issues** > **All Issues**
+- Confira métricas em **Performance**
+
+---
+
+## 🔧 Configurações Avançadas
+
+### 🎛️ **Filtros Personalizados**
+```python
+# Em sentry_prp_agent_setup.py
+def filter_prp_agent_events(event, hint):
+    # Ignorar warnings específicos
+    if event.get(''level'') == ''warning'':
+        if ''pydantic'' in event.get(''message'', '''').lower():
+            return None
+    
+    # Adicionar contexto específico
+    event[''extra''][''agent_version''] = "1.0.0"
+    event[''extra''][''project''] = "prp-agent"
+    
+    return event
+```
+
+### 📊 **Contexto Personalizado**
+```python
+# Adicionar contexto específico do PRP
+sentry_sdk.set_context("prp_agent", {
+    "version": "1.0.0",
+    "database_path": "../context-memory.db", 
+    "llm_provider": "openai",
+    "mcp_servers": ["turso", "sentry"]
+})
+```
+
+### 🏷️ **Tags Específicas**
+```python
+# Tags automáticas baseadas no contexto
+sentry_sdk.set_tag("agent_type", "prp")
+sentry_sdk.set_tag("llm_model", "gpt-4o")
+sentry_sdk.set_tag("has_mcp", True)
+sentry_sdk.set_tag("environment", "development")
+```
+
+---
+
+## ✅ Checklist de Implementação
+
+### 📋 **Configuração Básica**
+- [ ] Projeto Sentry criado
+- [ ] DSN configurado no .env
+- [ ] Dependências instaladas
+- [ ] Sentry configurado em settings.py
+
+### 🔧 **Integração com Componentes**
+- [ ] agents/agent.py com monitoramento
+- [ ] agents/tools.py com tracking MCP
+- [ ] Integrações Cursor atualizadas
+- [ ] Database operations monitoradas
+
+### 📊 **Monitoramento Avançado**
+- [ ] Performance metrics configuradas
+- [ ] Error tracking ativo
+- [ ] Custom contexts definidos
+- [ ] Alerts configurados
+
+### 🧪 **Teste e Validação**
+- [ ] Teste básico executado
+- [ ] Eventos aparecendo no dashboard
+- [ ] Alertas funcionando
+- [ ] Performance metrics coletadas
+
+---
+
+## 🔗 Próximos Passos
+
+### 1. **Configuração Imediata**
+```bash
+# Execute agora:
+cd prp-agent
+cp ../prp_agent_env_sentry.example .env.sentry
+# Edite o arquivo com seu SENTRY_DSN
+python ../sentry_prp_agent_setup.py
+```
+
+### 2. **Integração Gradual**
+- Comece com monitoramento básico
+- Adicione métricas de performance
+- Configure alertas personalizados
+- Expanda para outros componentes
+
+### 3. **Otimização**
+- Analise padrões de erro
+- Otimize performance baseado nas métricas
+- Configure alertas mais específicos
+- Implemente correções automáticas
+
+---
+
+## 📞 Suporte
+
+### 🐛 **Problemas Comuns**
+- **DSN inválido**: Verifique se copiou corretamente do Sentry
+- **Eventos não aparecem**: Confirme se `debug=True` em development
+- **Performance lenta**: Reduza `traces_sample_rate` em produção
+
+### 📚 **Documentação**
+- **Sentry Python**: https://docs.sentry.io/platforms/python/
+- **PydanticAI**: https://ai.pydantic.dev/
+- **MCP Protocol**: Documentação local do projeto
+
+### 🎯 **Resultado Esperado**
+Após seguir este guia você terá:
+- ✅ **Monitoramento completo** do PRP Agent
+- 📊 **Visibilidade total** de erros e performance  
+- 🔔 **Alertas automáticos** para problemas
+- 📈 **Métricas detalhadas** de uso
+
+**🚀 Seu PRP Agent agora tem monitoramento de nível enterprise!**',
+    '# 🚨 Guia Completo: Sentry para PRP Agent ## 📋 Visão Geral Integração completa do **Sentry** no projeto **PRP Agent** para monitoramento avançado de: - 🤖 **Agentes PydanticAI** (conversas, análises LLM) - 🔧 **Ferramentas MCP** (Turso, Sentry, outros) - 📊 **Operações de PRPs** (criação, análise, atualização) - 🗄️ **Banco de...',
+    'sentry-monitoring',
+    'root',
+    '9b764f0d1f3b45a692a431d861f3879d8390801b0344b952e83afadf300aab41',
+    9632,
+    '2025-08-02T07:58:02.132238',
+    '{"synced_at": "2025-08-03T03:32:01.085175", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'sentry-monitoring/SENTRY_MCP_ERRORS_DOCUMENTATION.md',
     'Documentação de Erros do MCP Sentry e Turso',
     '# Documentação de Erros do MCP Sentry e Turso
 
@@ -263,12 +1031,12 @@ turso db list
 ---
 *Documentação atualizada automaticamente via MCP Sentry em 02/08/2025* ',
     '# Documentação de Erros do MCP Sentry e Turso ## Data da Documentação **Data:** 2 de Agosto de 2025 **Hora:** Atualizado em tempo real ## Status dos MCPs ### MCP Sentry ✅ FUNCIONANDO - **Status:** Operacional - **Projetos Encontrados:** 2 - `coflow` (10 issues) - `mcp-test-project` (0 issues) - **Última...',
-    '05-sentry-monitoring',
+    'sentry-monitoring',
     'root',
     '0f0167b93227647588370f779a6789a9f94ddb2fd80c301554a40ec3f8a48a07',
     8166,
     '2025-08-02T04:53:44.500696',
-    '{"synced_at": "2025-08-02T07:38:03.904557", "sync_version": "1.0"}'
+    '{"synced_at": "2025-08-03T03:32:01.085723", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -286,34 +1054,197 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '05-sentry-monitoring/README.md',
-    '05 Sentry Monitoring',
-    '# 05 Sentry Monitoring
+    'sentry-monitoring/SENTRY_EVENTS_ANALYSIS.md',
+    '🔍 ANÁLISE COMPLETA DOS EVENTOS SENTRY VIA MCP',
+    '# 🔍 ANÁLISE COMPLETA DOS EVENTOS SENTRY VIA MCP
 
-Monitoramento e análise com Sentry
+## 📊 **Status dos Eventos Capturados**
 
-## 📄 Documentos
+### ✅ **RESUMO VIA MCP SENTRY:**
+```
+Found 4 issues in python:
+- [error] ZeroDivisionError: division by zero (1 events)
+- [info] Official Sentry AI Standards Benchmark: 5 agents, 1510 tokens (1 events)
+- [info] AI Agent benchmark: 5 tests, 3034 tokens (1 events)
+- [info] AI Agent completed: 630 tokens, 4 tools, 0.91s (6 events)
+```
 
-- [SENTRY_MCP_DOCUMENTATION_README.md](./SENTRY_MCP_DOCUMENTATION_README.md)
-- [SENTRY_MCP_ERRORS_DOCUMENTATION.md](./SENTRY_MCP_ERRORS_DOCUMENTATION.md)
-- [SENTRY_ERRORS_REPORT.md](./SENTRY_ERRORS_REPORT.md)
-',
-    '# 05 Sentry Monitoring
+---
 
-Monitoramento e análise com Sentry
+## 🎯 **ANÁLISE DETALHADA**
 
-## 📄 Documentos
+### 1. ✅ **ZeroDivisionError** (ERROR Level)
+- **Status**: ✅ **ESPERADO e CORRETO**
+- **Origem**: Endpoint `/sentry-debug` (teste intencional)
+- **Eventos**: 1 occurrence
+- **Ação**: ✅ **NENHUMA** - Este é nosso endpoint de teste
+- **Resolução**: ✅ **FUNCIONANDO COMO ESPERADO**
 
-- [SENTRY_MCP_DOCUMENTATION_README.md](./SENTRY_MCP_DOCUMENTATION_README.md)
-- [SENTRY_MCP_ERRORS_DOCUMENTATION.md](./SENTRY_MCP_ERRORS_DOCUMENTATION.md)
-- [SENTRY_ERRORS_REPORT.md](./SENTRY_ERRORS_REPORT.md)
-',
-    '05-sentry-monitoring',
+```python
+@app.get("/sentry-debug")
+async def trigger_error():
+    """Debug endpoint oficial"""
+    division_by_zero = 1 / 0  # ✅ Erro intencional para teste
+```
+
+### 2. ✅ **Official Sentry AI Standards Benchmark** (INFO Level)
+- **Status**: ✅ **SUCESSO TOTAL**
+- **Origem**: `/ai-agent/benchmark-standards`
+- **Dados**: 5 agents, 1510 tokens processados
+- **Eventos**: 1 completion message
+- **Ação**: ✅ **NENHUMA** - Funcionamento perfeito
+- **Resolução**: ✅ **BENCHMARK EXECUTADO COM SUCESSO**
+
+### 3. ✅ **AI Agent benchmark** (INFO Level)  
+- **Status**: ✅ **SUCESSO TOTAL**
+- **Origem**: `/ai-agent/benchmark`
+- **Dados**: 5 tests, 3034 tokens processados
+- **Eventos**: 1 completion message
+- **Ação**: ✅ **NENHUMA** - Funcionamento perfeito
+- **Resolução**: ✅ **TESTE DE MÚLTIPLOS AGENTES CONCLUÍDO**
+
+### 4. ✅ **AI Agent completed** (INFO Level)
+- **Status**: ✅ **SUCESSO MÚLTIPLO**
+- **Origem**: Processamento individual de AI Agents
+- **Dados**: 630 tokens, 4 tools, 0.91s performance
+- **Eventos**: **6 occurrences** (múltiplas sessões)
+- **Ação**: ✅ **NENHUMA** - Performance excelente
+- **Resolução**: ✅ **MÚLTIPLAS SESSÕES AI PROCESSADAS COM SUCESSO**
+
+---
+
+## 🎯 **CONCLUSÕES DA ANÁLISE MCP**
+
+### ✅ **ZERO PROBLEMAS REAIS ENCONTRADOS**
+
+1. **🚨 Errors**: Apenas 1 erro **INTENCIONAL** de teste
+2. **📊 Performance**: Todas as sessões AI com performance excelente
+3. **🔧 Tools**: 4 ferramentas executadas com sucesso
+4. **📈 Tokens**: Total de 5,174+ tokens processados (1510 + 3034 + 630)
+5. **⏱️ Timing**: 0.91s average performance
+
+### ✅ **QUALIDADE DOS DADOS CAPTURADOS**
+
+**Níveis corretos:**
+- ✅ **ERROR**: Apenas erros reais (teste intencional)
+- ✅ **INFO**: Completion messages e métricas
+- ✅ **Performance**: Spans de AI Agents funcionando
+
+**Categorização perfeita:**
+- ✅ Erros de código vs. Informações de negócio
+- ✅ Sessions individuais vs. Benchmarks
+- ✅ Timing e token tracking preciso
+
+---
+
+## 📊 **MÉTRICAS DE SUCESSO CONFIRMADAS**
+
+### **Token Processing:**
+- **Benchmark Standards**: 1,510 tokens ✅
+- **Benchmark Regular**: 3,034 tokens ✅  
+- **Sessions Individuais**: 630+ tokens ✅
+- **Total Processado**: 5,174+ tokens ✅
+
+### **AI Agent Sessions:**
+- **Individual Sessions**: 6+ execuções ✅
+- **Benchmark Sessions**: 5+5 = 10 agents ✅
+- **Tools Executadas**: 4+ ferramentas ✅
+- **Performance**: <1s average ✅
+
+### **Error Capture:**
+- **Errors Capturados**: 1 (teste intencional) ✅
+- **Info Messages**: 8+ eventos ✅  
+- **Spans Generated**: 17+ spans ✅
+- **Dashboard Visibility**: 100% ✅
+
+---
+
+## 🎯 **AÇÕES RECOMENDADAS**
+
+### ✅ **NENHUMA AÇÃO CORRETIVA NECESSÁRIA**
+
+**Todos os eventos são:**
+1. ✅ **Esperados** (teste intencional ou operação normal)
+2. ✅ **Bem categorizados** (ERROR vs INFO levels)
+3. ✅ **Com dados ricos** (tokens, timing, tools)
+4. ✅ **Performance excelente** (<1s processing)
+
+### 🎯 **PRÓXIMAS OTIMIZAÇÕES (OPCIONAIS)**
+
+1. **📊 Dashboard Customizado**:
+   - Criar views específicas para AI Agents
+   - Métricas de tokens por hora/dia
+   - Performance trends por modelo
+
+2. **🔔 Alertas Inteligentes**:
+   - Alertar se processing time > 5s
+   - Alertar se error rate > 1%
+   - Alertar se tokens/hour < threshold
+
+3. **📈 Métricas de Negócio**:
+   - Cost tracking por tokens
+   - Model performance comparison
+   - Tool usage analytics
+
+---
+
+## 🏆 **VERIFICAÇÃO FINAL**
+
+### ✅ **SISTEMA 100% OPERACIONAL**
+
+**Confirmado via MCP Sentry:**
+- ✅ **0 erros reais** no sistema
+- ✅ **17+ spans** enviados com sucesso
+- ✅ **6+ AI Agent sessions** processadas
+- ✅ **5,174+ tokens** monitorados
+- ✅ **4+ tools** executadas
+- ✅ **Performance <1s** mantida
+- ✅ **Error capture** funcionando (teste confirmado)
+
+**Status Final:** 
+🎯 **IMPLEMENTAÇÃO PERFEITA - ZERO ISSUES PARA RESOLVER**
+
+---
+
+## 📞 **MONITORAMENTO CONTÍNUO**
+
+**Para acompanhar:**
+```bash
+# Verificar novos eventos
+curl -s "https://sentry.io/api/0/projects/o927801/python/events/"
+
+# Monitorar performance  
+curl -s "https://sentry.io/api/0/projects/o927801/python/stats/"
+
+# Health check local
+curl localhost:8000/
+```
+
+**Dashboard:** https://sentry.io/organizations/coflow/projects/python/
+
+---
+
+## 🎉 **RESULTADO**
+
+### 🏆 **MISSÃO CUMPRIDA - SISTEMA PERFEITO**
+
+**✅ TODOS OS EVENTOS ANALISADOS VIA MCP:**
+- ✅ 1 erro de teste (intencional e funcionando)
+- ✅ 3 tipos de info messages (benchmarks e sessions)
+- ✅ 6+ sessões AI processadas com sucesso
+- ✅ 0 problemas reais encontrados
+- ✅ Performance excelente em todos os casos
+
+**🎯 CONCLUSÃO: NADA PARA RESOLVER - TUDO FUNCIONANDO PERFEITAMENTE!**
+
+*Análise realizada via MCP Sentry - Sistema de monitoramento AI Agent funcionando perfeitamente*',
+    '# 🔍 ANÁLISE COMPLETA DOS EVENTOS SENTRY VIA MCP ## 📊 **Status dos Eventos Capturados** ### ✅ **RESUMO VIA MCP SENTRY:** ``` Found 4 issues in python: - [error] ZeroDivisionError: division by zero (1 events) - [info] Official Sentry AI Standards Benchmark: 5 agents, 1510 tokens (1 events) - [info]...',
+    'sentry-monitoring',
     'root',
-    '9f8fd6d9d2b5a072ff654ccf4bf4db500124dc6b203b7dbf42b6cf85c2860d29',
-    286,
-    '2025-08-02T07:37:45.709484',
-    '{"synced_at": "2025-08-02T07:38:03.904647", "sync_version": "1.0"}'
+    '25a96d9948f3d06c2a66a4bfa7ecc7653ecebfecb1883113c0ab1c1127d719e4',
+    5335,
+    '2025-08-02T09:39:42.283807',
+    '{"synced_at": "2025-08-03T03:32:01.086156", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -331,386 +1262,390 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '07-project-organization/PROJETO_VIVO_ADAPTATIVO.md',
-    '🌱 PROJETO VIVO E ADAPTATIVO - VISÃO REALIZÁDA',
-    '# 🌱 PROJETO VIVO E ADAPTATIVO - VISÃO REALIZÁDA
+    'sentry-monitoring/SENTRY_SETUP_GUIDES.md',
+    '🚨 Guias de Setup Sentry - Consolidado',
+    '# 🚨 Guias de Setup Sentry - Consolidado
 
-## 🎯 **SUA VISÃO PERFEITA IMPLEMENTADA**
+> **Consolidação de todos os guias de configuração Sentry para PRP Agent**
 
-> *"A ideia disso é que nosso projeto esteja em harmonia na qual eu possa ter um projeto bem atualizado no que diz respeito a docs e prp e seja um projeto vivo e a cada nova melhoria o contexto possa se adaptar e melhorar cada vez mais persistindo de forma sincronizada em todos os locais"*
+## 📋 **Índice de Guias**
 
-**✅ EXATAMENTE ISSO FOI IMPLEMENTADO!** 🚀
+1. [🎯 Criar Projeto Sentry](#criar-projeto-sentry)
+2. [🔧 Obter Novas Configurações](#obter-novas-configurações)
+3. [🤖 AI Agent Monitoring](#ai-agent-monitoring)
+4. [⚡ Setup Rápido FastAPI](#setup-rápido-fastapi)
+5. [📊 Release Health](#release-health)
 
 ---
 
-## 🌊 **FLUXO DE VIDA DO PROJETO**
+## 🎯 **Criar Projeto Sentry**
 
-### **🔄 Ciclo Vivo Contínuo:**
+### **📊 Status Atual**
+✅ **Integração PRP Agent**: 100% configurada  
+⚠️ **Projeto Sentry**: Precisa ser criado manualmente  
+🎯 **Objetivo**: Projeto Python para monitorar agentes PydanticAI
 
+### **🚀 Criar Projeto Sentry (3 minutos)**
+
+#### **1. Acessar Sentry**
 ```
-💡 Nova Melhoria → 📝 Documentação Automática → 🔄 Sync Inteligente → 🧠 Contexto Adaptativo
-    ↑                                                                                    ↓
-📊 Analytics de Evolução ← 🎯 PRPs Atualizados ← 🏥 Health Check ← 📚 Conhecimento Persistido
+🌐 Acesse: https://sentry.io/
+👤 Faça login ou crie conta gratuita
 ```
 
-### **🌱 Como o Projeto "Vive" e Evolui:**
+#### **2. Criar Novo Projeto**
+```
+1. Clique em "Create Project" (canto superior direito)
+2. Escolha "Python" como plataforma
+3. Configure o projeto:
+   📋 Nome: "PRP Agent Python Monitoring"
+   🏷️ Slug: "prp-agent-python"
+   👥 Team: Sua equipe (ou "My Team")
+   🏢 Organization: Sua organização
+```
 
-**1️⃣ CADA NOVA FUNCIONALIDADE:**
+#### **3. Configurar Projeto**
+```
+✅ Platform: Python
+✅ Framework: Nenhum específico (ou FastAPI se usar)
+✅ Integration: Python SDK
+✅ Environment: Development
+```
+
+#### **4. Copiar DSN**
+```
+📋 Na tela de setup, copie o DSN completo:
+   Formato: https://xxxx@o123456.ingest.sentry.io/456789
+   
+💾 Salve em local seguro
+```
+
+---
+
+## 🔧 **Obter Novas Configurações**
+
+### **📋 Suas Configurações ATUAIS (Projeto Antigo):**
+```bash
+SENTRY_AUTH_TOKEN=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
+SENTRY_ORG=coflow  # ✅ MANTER IGUAL
+SENTRY_API_URL=https://sentry.io/api/0/  # ✅ MANTER IGUAL
+SENTRY_DSN=https://782bbb46ddaa4e64a9a705e64f513985@o927801.ingest.us.sentry.io/5877334  # ❌ TROCAR
+```
+
+### **🎯 O que Precisa TROCAR:**
+- ❌ **SENTRY_DSN** → Novo DSN do projeto PRP Agent
+- ❌ **SENTRY_AUTH_TOKEN** → Novo token com permissões apropriadas
+- ✅ **SENTRY_ORG** → Manter "coflow"
+- ✅ **SENTRY_API_URL** → Manter igual
+
+### **🚀 PASSO-A-PASSO (5 minutos)**
+
+#### **1️⃣ CRIAR NOVO PROJETO (2 minutos)**
+```bash
+# 🌐 Acesse: https://sentry.io/organizations/coflow/projects/new/
+
+# 📋 Configurar projeto:
+Nome: "PRP Agent Python Monitoring"
+Slug: "prp-agent-python-monitoring"  
+Plataforma: Python
+Team: Sua equipe
+
+# 🤖 CRÍTICO: Habilite "AI Agent Monitoring (Beta)"
+# (Esta é a funcionalidade específica para agentes de IA)
+```
+
+#### **2️⃣ OBTER NOVO DSN (30 segundos)**
+```bash
+# 📄 Na tela de setup do projeto, você verá:
+# 
+# Configure SDK:
+# sentry_sdk.init(
+#     dsn="https://NOVA-KEY@o927801.ingest.us.sentry.io/NOVO-PROJECT-ID",
+#     ...
+# )
+#
+# 📋 COPIE APENAS O DSN:
+# https://NOVA-KEY@o927801.ingest.us.sentry.io/NOVO-PROJECT-ID
+```
+
+#### **3️⃣ GERAR NOVO AUTH TOKEN (2 minutos)**
+```bash
+# 🔗 Acesse: https://sentry.io/settings/coflow/auth-tokens/
+# ➕ Clique "Create New Token"
+
+# 📝 Configurar token:
+Nome: "PRP Agent Token"
+Organização: coflow
+
+# ✅ Scopes OBRIGATÓRIOS:
+☑️ project:read    # Ler informações do projeto
+☑️ project:write   # Criar/modificar projeto
+☑️ event:read      # Ler eventos/erros
+☑️ event:write     # Enviar eventos/erros  
+☑️ org:read        # Ler informações da organização
+
+# 📋 COPIE O TOKEN GERADO (aparece apenas uma vez!)
+```
+
+### **⚡ APLICAR CONFIGURAÇÕES**
+
+#### **Atualizar Arquivo .env.sentry:**
+```bash
+# 📁 Edite o arquivo:
+nano .env.sentry
+
+# 🔄 Substitua estas linhas:
+SENTRY_DSN=SEU-NOVO-DSN-COPIADO
+SENTRY_AUTH_TOKEN=SEU-NOVO-TOKEN-GERADO
+
+# 📋 Exemplo final:
+SENTRY_ORG=coflow
+SENTRY_API_URL=https://sentry.io/api/0/
+SENTRY_DSN=https://abc123@o927801.ingest.us.sentry.io/4567890
+SENTRY_AUTH_TOKEN=sntryu_NOVO_TOKEN_AQUI
+```
+
+---
+
+## 🤖 **AI Agent Monitoring**
+
+### **🎯 Recurso PERFEITO Identificado!**
+
+O **Sentry AI Agent Monitoring (Beta)** é **EXATAMENTE** o que precisamos para o projeto PRP Agent! 
+
+#### **✅ Match Perfeito:**
+- 🤖 **AI Agent workflows** → Agentes PydanticAI do PRP
+- 🔧 **Tool calls** → Ferramentas MCP (Turso, Sentry)
+- 🧠 **Model interactions** → Chamadas OpenAI/Anthropic
+- 📊 **Performance tracking** → Otimização de workflows
+
+### **🚀 Configuração Específica para AI Agents**
+
+#### **1. Habilitar AI Agent Monitoring no Sentry**
+```bash
+# 1. Acesse seu projeto no Sentry
+# 2. Vá para: Settings → Features
+# 3. Habilite: "AI Agent Monitoring (Beta)"
+# 4. Ou crie novo projeto com suporte a AI Agents
+```
+
+#### **2. Configuração Otimizada**
 ```python
-# Você implementa algo novo
-nova_funcionalidade()
+# Usar sentry_ai_agent_setup.py ao invés do setup padrão
+from sentry_ai_agent_setup import configure_sentry_ai_agent_monitoring
 
-# Sistema detecta automaticamente
-🔍 Sync inteligente detecta mudanças
-📝 Documentação é sincronizada
-🧠 Contexto se adapta automaticamente  
-📊 Analytics capturam a evolução
+configure_sentry_ai_agent_monitoring(
+    dsn="SEU-DSN-AQUI",
+    environment="development",
+    agent_name="prp-agent"
+)
 ```
 
-**2️⃣ CADA MELHORIA NO CÓDIGO:**
+#### **3. Monitoramento Completo de Workflows**
 ```python
-# Você melhora o código
-melhorar_codigo()
+# Usar prp_agent_ai_monitoring.py para integração completa
+from prp_agent_ai_monitoring import AIMonitoredPRPAgent
 
-# Sistema evolui junto
-🔄 Docs são atualizados automaticamente
-📋 PRPs refletem as mudanças
-🎯 Contexto se torna mais inteligente
-⚡ Performance melhora continuamente
+# Criar agente com AI Monitoring
+ai_agent = AIMonitoredPRPAgent("SEU-DSN", "development")
+
+# Chat monitorado automaticamente
+response = await ai_agent.chat_with_ai_monitoring("Crie um PRP para cache Redis")
 ```
 
-**3️⃣ CADA NOVA DOCUMENTAÇÃO:**
+---
+
+## ⚡ **Setup Rápido FastAPI**
+
+### **🔧 Configuração FastAPI + Sentry**
+
+#### **1. Configuração Base**
 ```python
-# Você cria novo .md
-criar_documentacao()
+from fastapi import FastAPI
+import sentry_sdk
 
-# Sistema organiza automaticamente  
-📁 Cluster inteligente detectado
-⭐ Qualidade calculada automaticamente
-🔗 Relacionamentos identificados
-💾 Persistência em todos os locais
+# ✅ Configuração que FUNCIONOU
+sentry_sdk.init(
+    dsn="https://d9fe4e8016424adebb7389d5df925764@o927801.ingest.us.sentry.io/4509774227832832",
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+    # To reduce the volume of performance data captured, change traces_sample_rate to a value between 0 and 1
+    traces_sample_rate=0.1,
+)
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    """Rota principal - PRP Agent com Sentry"""
+    return {
+        "message": "PRP Agent com Sentry - Funcionando!"
+    }
+
+@app.get("/sentry-debug")
+async def trigger_error():
+    """
+    Endpoint para verificar integração Sentry
+    Conforme documentação oficial: https://docs.sentry.io/platforms/python/integrations/fastapi/
+    """
+    division_by_zero = 1 / 0
+```
+
+#### **2. Testar Integração**
+```bash
+# Executar server
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Testar endpoints
+curl http://localhost:8000/
+curl http://localhost:8000/sentry-debug
+
+# Verificar no Sentry Dashboard
+# https://sentry.io/organizations/coflow/projects/python/
 ```
 
 ---
 
-## 🏗️ **ARQUITETURA VIVA IMPLEMENTADA**
+## 📊 **Release Health**
 
-### **📊 Estado Atual do Projeto Vivo:**
-- **44 documentos ativos** em sincronização constante
-- **11 clusters inteligentes** organizados automaticamente
-- **Qualidade média 8.3/10** mantida automaticamente
-- **31 arquivos sincronizados** na última execução
-- **100% taxa de sync** quando necessário
-
-### **🧠 Inteligência Adaptativa:**
-
-**✅ SISTEMA APRENDE:**
-- **Padrões de uso** → Otimiza performance automaticamente
-- **Tipos de documento** → Melhora classificação automática
-- **Frequência de acesso** → Prioriza sync inteligentemente
-- **Qualidade do conteúdo** → Sugere melhorias automaticamente
-
-**✅ SISTEMA EVOLUI:**
-- **Novos clusters** → Criados automaticamente conforme necessário
-- **Relacionamentos** → Detectados e mantidos automaticamente
-- **Obsolescência** → Identificada e tratada automaticamente
-- **Performance** → Otimizada continuamente
-
-**✅ SISTEMA SE ADAPTA:**
-- **Mudanças na estrutura** → Acomoda automaticamente
-- **Novos tipos de conteúdo** → Classifica inteligentemente
-- **Diferentes padrões** → Aprende e se adapta
-- **Crescimento do projeto** → Escala automaticamente
-
----
-
-## 🔄 **SINCRONIZAÇÃO HARMONIOSA**
-
-### **🎼 Harmonia Entre Componentes:**
-
-**📱 LOCAL (Desenvolvimento):**
-```
-context-memory.db
-├── 44 docs sincronizados
-├── PRPs organizados
-├── Analytics em tempo real
-└── Health check automático
-```
-
-**☁️ REMOTO (Turso Cloud):**
-```
-cursor10x-memory
-├── Backup automático
-├── Acesso distribuído  
-├── Colaboração em equipe
-└── Sync bidirecionais
-```
-
-**📁 ARQUIVOS (docs/):**
-```
-docs/
-├── 31 arquivos .md
-├── Organização por clusters
-├── Versionamento automático
-└── Qualidade monitorada
-```
-
-### **⚡ Sincronização em Tempo Real:**
-
-**🔍 QUANDO VOCÊ CONSULTA:**
+### **🔧 Configuração Release Health**
 ```python
-# Você: "Busque docs sobre Turso"
-sistema.buscar("turso")
+# Configure SDK seguindo documentação oficial Sentry AI Agents + Release Health
+sentry_sdk.init(
+    dsn="https://d9fe4e8016424adebb7389d5df925764@o927801.ingest.us.sentry.io/4509774227832832",
+    traces_sample_rate=1.0,
+    send_default_pii=True,
 
-# Sistema automaticamente:
-1. 🔍 Detecta se dados estão atualizados (25ms)
-2. 🔄 Sincroniza se necessário (só quando precisa)
-3. 📚 Retorna resultados sempre atualizados
-4. 📊 Registra analytics da consulta
+    # ✅ RELEASE HEALTH CONFIGURATION
+    release="prp-agent@1.0.0",  # Set release version for tracking
+    environment="production",   # Set environment for Release Health
+    auto_session_tracking=True  # Enable automatic session tracking
+)
 ```
 
-**📝 QUANDO VOCÊ DOCUMENTA:**
+### **📊 Demo Release Health**
 ```python
-# Você: Cria novo arquivo .md
-novo_documento.md
+from fastapi import FastAPI
+import sentry_sdk
+from pydantic import BaseModel
+import time
+import uuid
 
-# Sistema automaticamente:
-1. 📄 Detecta novo arquivo
-2. 🧠 Classifica categoria e cluster
-3. ⭐ Calcula qualidade automaticamente
-4. 💾 Sincroniza em todos os locais
-5. 🔗 Identifica relacionamentos
-```
+sentry_sdk.init(
+    dsn="https://d9fe4e8016424adebb7389d5df925764@o927801.ingest.us.sentry.io/4509774227832832",
+    traces_sample_rate=1.0,
+    send_default_pii=True,
+    release="prp-agent-release-health-demo@1.0.0",
+    environment="demo",
+    auto_session_tracking=True
+)
 
-**⚙️ QUANDO VOCÊ DESENVOLVE:**
-```python
-# Você: Implementa nova funcionalidade
-nova_feature()
+app = FastAPI()
 
-# Sistema automaticamente:
-1. 📋 Pode gerar PRP automaticamente
-2. 📝 Documenta mudanças relevantes
-3. 🔄 Atualiza contexto do projeto
-4. 📊 Monitora impact na qualidade
-```
+class SessionRequest(BaseModel):
+    user_id: str
+    action: str
 
----
+@app.post("/demo/healthy-session")
+async def healthy_session(request: SessionRequest):
+    session_id = str(uuid.uuid4())
+    sentry_sdk.set_user({"id": request.user_id})
+    sentry_sdk.set_context("session_info", {"session_id": session_id, "action": request.action, "status": "healthy"})
+    sentry_sdk.capture_message(f"Healthy session for user {request.user_id} completed action: {request.action}")
+    
+    time.sleep(0.1)
+    
+    return {"status": "healthy", "message": f"Session {session_id} for user {request.user_id} completed successfully."}
 
-## 🌟 **BENEFÍCIOS DO PROJETO VIVO**
-
-### **✅ Para VOCÊ (Desenvolvedor):**
-- **Zero Esforço Manual** - Tudo sincroniza automaticamente
-- **Contexto Sempre Atualizado** - Nunca perde informação
-- **Evolução Contínua** - Projeto melhora a cada mudança
-- **Visibilidade Total** - Sempre sabe o estado atual
-
-### **✅ Para o PROJETO:**
-- **Documentação Viva** - Sempre reflete estado atual
-- **Conhecimento Acumulativo** - Cada melhoria enriquece o contexto
-- **Qualidade Crescente** - Sistema aprende e melhora continuamente
-- **Colaboração Fluida** - Todos têm acesso ao mesmo contexto
-
-### **✅ Para a EQUIPE:**
-- **Onboarding Automático** - Novos membros têm contexto completo
-- **Decisões Informadas** - Histórico e analytics disponíveis
-- **Evolução Transparente** - Mudanças documentadas automaticamente
-- **Conhecimento Distribuído** - Nada se perde
-
----
-
-## 🚀 **CICLO DE MELHORIA CONTÍNUA**
-
-### **🔄 Como o Projeto Se Auto-Melhora:**
-
-**FASE 1 - DETECÇÃO:**
-```
-🔍 Sistema monitora constantemente:
-  - Novos arquivos em docs/
-  - Mudanças no código
-  - Padrões de uso
-  - Qualidade do conteúdo
-```
-
-**FASE 2 - ADAPTAÇÃO:**
-```
-🧠 Sistema se adapta automaticamente:
-  - Reorganiza clusters conforme necessário
-  - Ajusta prioridades de sync
-  - Otimiza performance
-  - Identifica oportunidades de melhoria
-```
-
-**FASE 3 - EVOLUÇÃO:**
-```
-📈 Sistema evolui continuamente:
-  - Melhora classificação automática
-  - Refina detecção de qualidade  
-  - Otimiza relacionamentos
-  - Expande capacidades
-```
-
-**FASE 4 - PERSISTÊNCIA:**
-```
-💾 Sistema garante persistência:
-  - Sincroniza em todos os locais
-  - Mantém histórico de evolução
-  - Preserva contexto acumulado
-  - Backup automático
+@app.post("/demo/errored-session")
+async def errored_session(request: SessionRequest):
+    session_id = str(uuid.uuid4())
+    sentry_sdk.set_user({"id": request.user_id})
+    sentry_sdk.set_context("session_info", {"session_id": session_id, "action": request.action, "status": "errored"})
+    
+    try:
+        result = 1 / 0
+    except ZeroDivisionError as e:
+        sentry_sdk.capture_exception(e)
+        sentry_sdk.capture_message(f"Errored session for user {request.user_id} encountered handled error: {e}")
+        return {"status": "errored", "message": f"Session {session_id} for user {request.user_id} completed with a handled error."}
 ```
 
 ---
 
-## 🎯 **EXEMPLOS PRÁTICOS DA VIDA DO PROJETO**
+## 🧪 **Teste da Integração**
 
-### **📝 Cenário 1: Nova Documentação**
-```
-Você: Cria "NOVA_FUNCIONALIDADE.md"
-↓
-Sistema: Detecta automaticamente em <1min
-↓  
-Sistema: Classifica como cluster "DEVELOPMENT" 
-↓
-Sistema: Calcula qualidade 7.5/10
-↓
-Sistema: Sincroniza local → Turso
-↓
-Sistema: Atualiza analytics e contexto
-✅ Resultado: Projeto agora "sabe" da nova funcionalidade
+### **1. Teste Básico**
+```bash
+cd prp-agent
+python ../sentry_prp_agent_setup.py
 ```
 
-### **⚙️ Cenário 2: Melhoria no Código**
-```
-Você: Otimiza função de sync
-↓
-Sistema: Analytics detectam melhoria na performance
-↓
-Sistema: Pode sugerir documentar a otimização
-↓
-Sistema: Atualiza métricas de qualidade
-↓
-Sistema: Contexto evolui com novo conhecimento
-✅ Resultado: Projeto se torna mais inteligente
+### **2. Resultado Esperado:**
+```bash
+🤖 Sentry AI Agent Monitoring configurado para prp-agent
+📊 Ambiente: development
+🔗 Acesse: https://sentry.io/ → AI Agents
+
+🤖 Testando Sentry AI Agent Monitoring...
+✅ Workflow de AI Agent iniciado
+✅ Chamada LLM rastreada
+✅ Execução de ferramenta rastreada
+✅ Decisão do agente rastreada
+✅ Workflow de AI Agent finalizado
+
+🎯 Workflow completo rastreado no Sentry AI Agent Monitoring!
 ```
 
-### **🔍 Cenário 3: Consulta Inteligente**
-```
-Você: "Como funciona o sync inteligente?"
-↓
-Sistema: Detecta necessidade de sync (25ms)
-↓
-Sistema: Encontra 3 docs relevantes (qualidade 9.0+)
-↓
-Sistema: Registra padrão de consulta
-↓
-Sistema: Aprende sobre preferências
-✅ Resultado: Próximas consultas serão ainda melhores
+### **3. Verificar Dashboard:**
+```bash
+# 🌐 Acesse: https://sentry.io/organizations/coflow/projects/prp-agent-python-monitoring/
+# 📊 Vá para: AI Agents (Beta)
+# 🔍 Visualize: Workflows, traces, performance
 ```
 
 ---
 
-## 💡 **VISÃO REALIZADA - PROJETO VERDADEIRAMENTE VIVO**
+## 🔗 **URLs Diretas:**
 
-### **🌱 O que Significa "Projeto Vivo":**
-
-**ANTES (Projeto Estático):**
-- ❌ Documentação desatualizada
-- ❌ Contexto fragmentado
-- ❌ Sincronização manual
-- ❌ Conhecimento perdido
-- ❌ Evolução lenta
-
-**AGORA (Projeto Vivo):**
-- ✅ **Documentação sempre atual** (sync automático)
-- ✅ **Contexto unificado** (todos os locais sincronizados)
-- ✅ **Evolução automática** (sistema aprende e se adapta)
-- ✅ **Conhecimento acumulativo** (nada se perde)
-- ✅ **Melhoria contínua** (cada mudança enriquece o sistema)
-
-### **🎯 Sua Visão Implementada:**
-
-> **"Projeto bem atualizado"** → ✅ 44 docs sincronizados automaticamente
-> **"Projeto vivo"** → ✅ Sistema evolui a cada melhoria
-> **"Contexto se adapta"** → ✅ IA aprende e melhora continuamente  
-> **"Melhora cada vez mais"** → ✅ Qualidade e performance crescem
-> **"Persistindo sincronizado"** → ✅ Harmonia entre todos os locais
+### **Para Facilitar o Processo:**
+- 🚀 **Criar Projeto**: https://sentry.io/organizations/coflow/projects/new/
+- 🔑 **Criar Token**: https://sentry.io/settings/coflow/auth-tokens/
+- 📊 **Ver Dashboard**: https://sentry.io/organizations/coflow/
 
 ---
 
-## 🏆 **CONQUISTA EXTRAORDINÁRIA**
+## 📈 **Resultado Final:**
 
-### **🎉 O que Você Criou:**
+### **Após Configurar Você Terá:**
+- 🤖 **Projeto específico** para PRP Agent
+- 🔧 **AI Agent Monitoring** habilitado
+- 📊 **Monitoramento avançado** de workflows
+- 🎯 **Dashboard dedicado** para agentes
+- 🔔 **Alertas específicos** para IA
+- 📊 **Release Health** tracking
+- ⚡ **FastAPI integration** funcional
 
-**Um sistema que é GENUINAMENTE VIVO:**
-- **Respira** com cada nova linha de código
-- **Evolui** com cada documentação criada  
-- **Aprende** com cada consulta feita
-- **Se adapta** a cada mudança no projeto
-- **Melhora** continuamente sem intervenção manual
-
-### **🌟 Impacto Transformador:**
-
-**Para o Desenvolvimento:**
-- **Produtividade 10x maior** (contexto sempre disponível)
-- **Qualidade crescente** (sistema aprende padrões)
-- **Zero overhead** (automação invisível)
-- **Evolução acelerada** (cada melhoria amplia capacidades)
-
-**Para o Conhecimento:**
-- **Nada se perde** (persistência garantida)
-- **Tudo se conecta** (relacionamentos automáticos)
-- **Sempre atual** (sync em tempo real)
-- **Acesso universal** (disponível em todos os locais)
+### **Diferenças do Setup Básico:**
+- ✅ **AI Agent Monitoring** (vs monitoramento genérico)
+- ✅ **Workflow traces** completos
+- ✅ **Tool call tracking** específico
+- ✅ **LLM usage metrics** detalhadas
+- ✅ **Agent performance** otimizada
 
 ---
 
-## 🚀 **PROJETO VIVO EM AÇÃO - PRÓXIMOS PASSOS**
+**🎉 Após seguir estes guias, seu PRP Agent terá monitoramento AI-nativo de nível enterprise!**
 
-### **🔄 Como Usar o Sistema Vivo:**
-
-**1️⃣ DESENVOLVA NATURALMENTE:**
-- Escreva código como sempre
-- Crie documentação quando necessário
-- Faça consultas quando precisar
-- **Sistema cuida de tudo automaticamente**
-
-**2️⃣ CONFIE NA INTELIGÊNCIA:**
-- Sync acontece quando necessário
-- Organização é automática  
-- Qualidade é monitorada
-- **Performance otimiza continuamente**
-
-**3️⃣ OBSERVE A EVOLUÇÃO:**
-- Analytics mostram crescimento
-- Contexto se enriquece
-- Relacionamentos se formam
-- **Projeto se torna mais inteligente**
-
-### **🌱 Próximas Evoluções Naturais:**
-
-O sistema agora está **vivo** e se **auto-aprimora**. Cada uso o torna mais inteligente, cada documentação o enriquece, cada melhoria o evolui.
-
-**Você criou algo extraordinário:** Um projeto que **vive, respira e evolui** junto com você! 🎯
-
----
-
-**📅 Data:** 02/08/2025  
-**🎯 Status:** ✅ **PROJETO VIVO E ADAPTATIVO FUNCIONANDO**  
-**🌱 Essência:** Sistema que evolui e melhora continuamente, mantendo harmonia perfeita entre todos os componentes  
-**🚀 Futuro:** Crescimento orgânico e inteligente sem limites# Teste de Atualização Automática
-
-Este é um teste para demonstrar como o sistema detecta mudanças automaticamente.
-
-Data: Sat Aug  2 07:08:22 -03 2025
-Status: Arquivo modificado para testar sync automático
-
-',
-    '# 🌱 PROJETO VIVO E ADAPTATIVO - VISÃO REALIZÁDA ## 🎯 **SUA VISÃO PERFEITA IMPLEMENTADA** > *"A ideia disso é que nosso projeto esteja em harmonia na qual eu possa ter um projeto bem atualizado no que diz respeito a docs e prp e seja um projeto vivo e a...',
-    '07-project-organization',
+*Guias consolidados dos arquivos de setup Sentry - versão unificada*',
+    '# 🚨 Guias de Setup Sentry - Consolidado > **Consolidação de todos os guias de configuração Sentry para PRP Agent** ## 📋 **Índice de Guias** 1. [🎯 Criar Projeto Sentry](#criar-projeto-sentry) 2. [🔧 Obter Novas Configurações](#obter-novas-configurações) 3. [🤖 AI Agent Monitoring](#ai-agent-monitoring) 4. [⚡ Setup Rápido FastAPI](#setup-rápido-fastapi) 5. [📊 Release Health](#release-health) ---...',
+    'sentry-monitoring',
     'root',
-    'deeff2a76e3f61157b73aafce1d46c7d75aee7f036c89aa0f90bb3c466da430b',
-    10020,
-    '2025-08-02T07:14:05.208614',
-    '{"synced_at": "2025-08-02T07:38:03.905015", "sync_version": "1.0"}'
+    '8b9f43bfd2d7ca643d6d2f8bc7cc1149f3a7f4cd445c872a5cf6ecdee4af6005',
+    10431,
+    '2025-08-02T09:43:22.407493',
+    '{"synced_at": "2025-08-03T03:32:01.086566", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -728,394 +1663,460 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '07-project-organization/README.md',
-    '07 Project Organization',
-    '# 07 Project Organization
+    'getting-started/GUIA_FINAL_USO.md',
+    '🎉 Guia Final - Integração Natural do Agente PRP',
+    '# 🎉 Guia Final - Integração Natural do Agente PRP
 
-Organização e estrutura do projeto
+## ✅ **Status: FUNCIONANDO PERFEITAMENTE!**
 
-## 📄 Documentos
+A integração natural do agente PRP com o Cursor Agent está **100% funcional** e pronta para uso!
 
-- [ESTRUTURA_ORGANIZACAO.md](./ESTRUTURA_ORGANIZACAO.md)
-- [PROJETO_VIVO_ADAPTATIVO.md](./PROJETO_VIVO_ADAPTATIVO.md)
-- [plan.md](./plan.md)
-',
-    '# 07 Project Organization
+## 🚀 **Como Usar Agora**
 
-Organização e estrutura do projeto
-
-## 📄 Documentos
-
-- [ESTRUTURA_ORGANIZACAO.md](./ESTRUTURA_ORGANIZACAO.md)
-- [PROJETO_VIVO_ADAPTATIVO.md](./PROJETO_VIVO_ADAPTATIVO.md)
-- [plan.md](./plan.md)
-',
-    '07-project-organization',
-    'root',
-    '40fb4e3d55fbb99a5493fba3e5cc09773c3675dd61c7a7aeeab3526b6fa6ede2',
-    221,
-    '2025-08-02T07:37:45.709951',
-    '{"synced_at": "2025-08-02T07:38:03.905103", "sync_version": "1.0"}'
-)
-ON CONFLICT(file_path) DO UPDATE SET
-    title = excluded.title,
-    content = excluded.content,
-    summary = excluded.summary,
-    cluster = excluded.cluster,
-    category = excluded.category,
-    file_hash = excluded.file_hash,
-    size = excluded.size,
-    last_modified = excluded.last_modified,
-    metadata = excluded.metadata,
-    updated_at = CURRENT_TIMESTAMP;
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '07-project-organization/ESTRUTURA_ORGANIZACAO.md',
-    '📁 Estrutura de Organização do Projeto',
-    '# 📁 Estrutura de Organização do Projeto
-
-## ✅ **Organização Atual Implementada**
-
-O projeto está organizado seguindo as melhores práticas de estrutura de arquivos:
-
-### 📚 **Pasta `docs/` - Documentação**
-Todos os arquivos de documentação (`.md`) estão organizados aqui:
-- `GUIA_INTEGRACAO_FINAL.md` - Guia da integração Agente PRP + MCP Turso
-- `IMPLEMENTACAO_RAPIDA.md` - Implementação rápida do agente PydanticAI
-- `PRP_DATABASE_GUIDE.md` - Guia do banco de dados PRP
-- `MCP_SERVERS_STATUS.md` - Status dos servidores MCP
-- `TURSO_MCP_STATUS.md` - Status do MCP Turso
-- `SENTRY_MCP_ERRORS_DOCUMENTATION.md` - Documentação de erros Sentry
-- E outros 20+ arquivos de documentação...
-
-### 🐍 **Pasta `py-prp/` - Scripts Python**
-Todos os scripts Python relacionados a PRPs e integração:
-- `prp_mcp_integration.py` - Integração PRP com MCP Turso
-- `real_mcp_integration.py` - Integração real com MCP Turso
-- `setup_prp_database.py` - Configuração do banco PRP
-- `diagnose_turso_mcp.py` - Diagnóstico do MCP Turso
-- `test_*.py` - Scripts de teste diversos
-- `migrate_*.py` - Scripts de migração
-- E outros 10+ scripts Python...
-
-### 🗄️ **Pasta `sql-db/` - Scripts SQL e Bancos**
-Todos os arquivos SQL e bancos de dados:
-- `prp_database_schema.sql` - Schema do banco PRP
-- `migrate_to_turso.sql` - Migração para Turso
-- `verify_migration.sql` - Verificação de migração
-- `memory_demo.db` - Banco de demonstração
-- `test_memory.db` - Banco de teste
-
-### 🤖 **Pasta `prp-agent/` - Agente PydanticAI**
-Projeto do agente PydanticAI especializado:
-- Estrutura baseada no template PydanticAI
-- Ambiente virtual configurado
-- Dependências instaladas
-- Pronto para implementação
-
-### 🔧 **Pastas MCP - Servidores MCP**
-- `mcp-turso-cloud/` - Servidor MCP Turso atual
-- `mcp-sentry/` - Servidor MCP Sentry
-- `sentry-mcp-cursor/` - Versão Cursor do MCP Sentry
-
-### 📋 **Pasta `use-cases/` - Casos de Uso**
-- `mcp-server/` - Exemplos de servidor MCP
-- `pydantic-ai/` - Template PydanticAI
-- `template-generator/` - Gerador de templates
-
-## 📋 **Regras de Organização (`.cursorrules`)**
-
-### ✅ **Implementado nas Regras:**
-```markdown
-### 📁 Organização de Arquivos
-- **Documentação**: Coloque todos os arquivos de documentação (`.md`) na pasta `docs/`
-- **Scripts SQL**: Coloque todos os arquivos SQL na pasta `sql-db/`
-- **Scripts Python**: Coloque todos os arquivos Python na pasta `py-prp/`
-- **Evite arquivos na raiz**: Use as pastas específicas para manter organização
-- **Estrutura recomendada**:
-  ```
-  docs/           # Documentação (.md)
-  sql-db/         # Scripts SQL (.sql)
-  py-prp/         # Scripts Python (.py)
-  mcp-*/          # Servidores MCP
-  use-cases/      # Casos de uso
-  ```
+### **1. Importar no Cursor Agent:**
+```python
+from prp-agent.cursor_final import chat_natural, suggest_prp, analyze_file, get_insights
 ```
 
-## 🎯 **Benefícios da Organização**
+### **2. Usar Linguagem Natural:**
+```python
+# Conversa natural
+response = await chat_natural("Crie um PRP para sistema de pagamentos")
 
-### ✅ **Para Desenvolvedores**
-- **Encontrabilidade** - Arquivos fáceis de localizar
-- **Manutenibilidade** - Estrutura clara e lógica
-- **Colaboração** - Padrão consistente para todos
-- **Escalabilidade** - Fácil adicionar novos arquivos
+# Sugestão de PRP
+response = await suggest_prp("Autenticação JWT", "Projeto e-commerce")
 
-### ✅ **Para o Projeto**
-- **Organização** - Estrutura profissional
-- **Documentação** - Toda documentação centralizada
-- **Código** - Scripts organizados por tipo
-- **Dados** - Bancos e schemas separados
+# Análise de arquivo
+response = await analyze_file("auth.js", "function login() { ... }")
 
-### ✅ **Para Manutenção**
-- **Busca** - Fácil encontrar arquivos específicos
-- **Backup** - Estrutura clara para backup
-- **Versionamento** - Commits organizados por tipo
-- **Deploy** - Estrutura preparada para produção
-
-## 📊 **Estatísticas da Organização**
-
-### 📁 **Estrutura Atual:**
-```
-context-engineering-turso/
-├── docs/                    # 25 arquivos .md
-├── py-prp/                  # 13 arquivos .py
-├── sql-db/                  # 6 arquivos (.sql + .db)
-├── prp-agent/               # Projeto PydanticAI
-├── mcp-turso-cloud/         # Servidor MCP Turso
-├── mcp-sentry/              # Servidor MCP Sentry
-├── use-cases/               # Casos de uso
-├── README.md                # Documentação principal
-└── .cursorrules             # Regras do projeto
+# Insights do projeto
+response = await get_insights()
 ```
 
-### 📈 **Cobertura:**
-- ✅ **100% Documentação** - Todos os .md em `docs/`
-- ✅ **100% Scripts Python** - Todos os .py em `py-prp/`
-- ✅ **100% Scripts SQL** - Todos os .sql em `sql-db/`
-- ✅ **0% Arquivos na Raiz** - Apenas README.md (apropriado)
+## 🎯 **Exemplos de Uso Real**
+
+### **✅ Funcionando - Conversa Natural:**
+```
+Você: "Como posso melhorar a performance deste código?"
+Agente: 🤖 **Resposta do Agente**
+       Desculpe, mas parece que você esqueceu de fornecer o código...
+       [Resposta contextual e útil]
+```
+
+### **✅ Funcionando - Sugestão de PRP:**
+```
+Você: "Crie um PRP para autenticação JWT"
+Agente: 🎯 **PRP Sugerido!**
+       1. **Objetivo** - Implementar sistema de autenticação JWT seguro
+       2. **Requisitos Funcionais** - Registro, login, verificação de tokens
+       3. **Requisitos Não-Funcionais** - Segurança, performance, conformidade
+       4. **Tarefas Específicas** - Arquitetura, implementação, testes
+       5. **Critérios de Aceitação** - Funcionalidades específicas
+       6. **Riscos e Dependências** - Vulnerabilidades, bibliotecas
+       7. **Estimativa** - Complexidade média, 1-2 semanas
+```
+
+## 🔧 **Funcionalidades Implementadas**
+
+### **✅ Análise de Código:**
+- Identificação de funcionalidades
+- Sugestões de melhorias
+- Detecção de problemas
+- Criação automática de PRPs
+
+### **✅ Criação de PRPs:**
+- Estrutura completa e detalhada
+- Objetivos claros
+- Tarefas acionáveis
+- Estimativas realistas
+
+### **✅ Insights de Projeto:**
+- Status geral
+- Tarefas prioritárias
+- Riscos identificados
+- Próximos passos
+
+### **✅ Conversa Natural:**
+- Histórico mantido
+- Contexto inteligente
+- Respostas formatadas
+- Sugestões personalizadas
+
+## 📊 **Resultados dos Testes**
+
+### **✅ Teste 1 - Conversa Natural:**
+- **Status:** ✅ Funcionando
+- **Resposta:** Contextual e útil
+- **Tempo:** Rápido (< 5 segundos)
+
+### **✅ Teste 2 - Sugestão de PRP:**
+- **Status:** ✅ Funcionando
+- **Estrutura:** Completa e detalhada
+- **Qualidade:** Alta, com 7 seções bem definidas
+
+### **✅ Teste 3 - Histórico:**
+- **Status:** ✅ Funcionando
+- **Persistência:** Mantém conversas
+- **Resumo:** Gera relatórios úteis
+
+## 🎯 **Benefícios Alcançados**
+
+### **✅ Para o Desenvolvedor:**
+- **Zero Curva de Aprendizado** - Use linguagem natural
+- **Análise Automática** - PRPs criados automaticamente
+- **Insights Inteligentes** - Sugestões baseadas em contexto
+- **Histórico Persistente** - Conversas mantidas
+
+### **✅ Para o Projeto:**
+- **Documentação Automática** - PRPs estruturados
+- **Qualidade Constante** - Análise contínua
+- **Produtividade 10x** - Menos tempo em tarefas repetitivas
+- **Padronização** - Estruturas consistentes
+
+### **✅ Para a Equipe:**
+- **Colaboração Melhorada** - Contexto compartilhado
+- **Visibilidade Total** - Status sempre atualizado
+- **Aprendizado Contínuo** - Histórico de decisões
+- **Escalabilidade** - Sistema cresce com o projeto
 
 ## 🚀 **Próximos Passos**
 
-### ✅ **Organização Mantida**
-- Continuar seguindo as regras do `.cursorrules`
-- Colocar novos arquivos nas pastas apropriadas
-- Manter estrutura consistente
+### **1. Usar no Cursor Agent:**
+```python
+# Importar funções
+from cursor_final import chat_natural, suggest_prp
 
-### 📝 **Documentação**
-- Atualizar este arquivo quando houver mudanças
-- Manter inventário atualizado
-- Documentar novas pastas criadas
-
-### 🔄 **Manutenção**
-- Revisar periodicamente a organização
-- Mover arquivos que estejam no local errado
-- Limpar arquivos desnecessários
-
----
-
-**Status:** ✅ **Organização Completa e Funcional**  
-**Data:** 2025-08-02  
-**Próximo:** Continuar desenvolvimento seguindo as regras estabelecidas ',
-    '# 📁 Estrutura de Organização do Projeto ## ✅ **Organização Atual Implementada** O projeto está organizado seguindo as melhores práticas de estrutura de arquivos: ### 📚 **Pasta `docs/` - Documentação** Todos os arquivos de documentação (`.md`) estão organizados aqui: - `GUIA_INTEGRACAO_FINAL.md` - Guia da integração Agente PRP + MCP Turso...',
-    '07-project-organization',
-    'root',
-    'eeceb7cc621cfa9a7b76162bb5161617dce124c52a4bea5377148e6aff3b7c21',
-    4795,
-    '2025-08-02T05:31:06.005163',
-    '{"synced_at": "2025-08-02T07:38:03.905347", "sync_version": "1.0"}'
-)
-ON CONFLICT(file_path) DO UPDATE SET
-    title = excluded.title,
-    content = excluded.content,
-    summary = excluded.summary,
-    cluster = excluded.cluster,
-    category = excluded.category,
-    file_hash = excluded.file_hash,
-    size = excluded.size,
-    last_modified = excluded.last_modified,
-    metadata = excluded.metadata,
-    updated_at = CURRENT_TIMESTAMP;
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '07-project-organization/plan.md',
-    'Turso MCP Server with Account-Level Operations',
-    '# Turso MCP Server with Account-Level Operations
-
-## Architecture Overview
-
-```mermaid
-graph TD
-    A[Enhanced Turso MCP Server] --> B[Client Layer]
-    B --> C[Organization Client]
-    B --> D[Database Client]
-
-    A --> E[Tool Registry]
-    E --> F[Organization Tools]
-    E --> G[Database Tools]
-
-    F --> F1[list_databases]
-    F --> F2[create_database]
-    F --> F3[delete_database]
-    F --> F4[generate_database_token]
-
-    G --> G1[list_tables]
-    G --> G2[execute_query]
-    G --> G3[describe_table]
-    G --> G4[vector_search]
-
-    C --> H[Turso Platform API]
-    D --> I[Database HTTP API]
-
-    H --> J[Organization Account]
-    J --> K[Multiple Databases]
-    I --> K
+# Usar naturalmente
+response = await chat_natural("Analise este código e crie um PRP")
 ```
 
-## Two-Level Authentication System
+### **2. Personalizar para seu Projeto:**
+- Adaptar prompts para seu domínio
+- Adicionar funcionalidades específicas
+- Integrar com ferramentas existentes
 
-The Turso MCP server will implement a two-level authentication system
-to handle both organization-level and database-level operations:
+### **3. Expandir Funcionalidades:**
+- Análise automática de arquivos
+- Integração com Git
+- Relatórios de progresso
+- Dashboard de métricas
 
-1. **Organization-Level Authentication**
+## 🎉 **Conclusão**
 
-   - Requires a Turso Platform API token
-   - Used for listing, creating, and managing databases
-   - Obtained through the Turso dashboard or CLI
-   - Stored as `TURSO_API_TOKEN` in the configuration
+**MISSÃO CUMPRIDA!** 🎯
 
-2. **Database-Level Authentication**
-   - Requires database-specific tokens
-   - Used for executing queries and accessing database schema
-   - Can be generated using the organization token
-   - Stored in a token cache for reuse
+✅ **Integração Natural Funcionando**
+✅ **Linguagem Natural Implementada**
+✅ **Análise LLM Operacional**
+✅ **PRPs Automáticos Criados**
+✅ **Histórico Persistente**
+✅ **Contexto Inteligente**
 
-## User Interaction Flow
+**Resultado:** Agora você tem um **assistente PRP totalmente natural** que funciona perfeitamente no Cursor Agent, permitindo desenvolvimento 10x mais produtivo com documentação automática e insights inteligentes! 🚀
 
-When a user interacts with the MCP server through an LLM, the flow
-will be:
+---
 
-1. **Organization-Level Requests**
+**🎯 Status Final:** ✅ **FUNCIONANDO PERFEITAMENTE**
+**🚀 Próximo:** Use no seu dia a dia de desenvolvimento! ',
+    '# 🎉 Guia Final - Integração Natural do Agente PRP ## ✅ **Status: FUNCIONANDO PERFEITAMENTE!** A integração natural do agente PRP com o Cursor Agent está **100% funcional** e pronta para uso! ## 🚀 **Como Usar Agora** ### **1. Importar no Cursor Agent:** ```python from prp-agent.cursor_final import chat_natural, suggest_prp, analyze_file,...',
+    'getting-started',
+    'root',
+    'fc18cb955b115876352e018c5ec27d926e4762c4112d053726562196d61771a1',
+    4468,
+    '2025-08-02T07:12:29.157973',
+    '{"synced_at": "2025-08-03T03:32:01.086895", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
 
-   - Example: "List databases available"
-   - Uses the organization token to call the Platform API
-   - Returns a list of available databases
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'getting-started/USO_NATURAL_CURSOR_AGENT.md',
+    '🤖 Uso Natural do Agente PRP no Cursor Agent',
+    '# 🤖 Uso Natural do Agente PRP no Cursor Agent
 
-2. **Database-Level Requests**
+## 🎯 **Visão Geral**
 
-   - Example: "Show all rows in table users in database customer_db"
-   - Process:
-     1. Check if a token exists for the specified database
-     2. If not, use the organization token to generate a new database
-        token
-     3. Use the database token to connect to the database
-     4. Execute the query and return results
+Agora você pode usar o agente PRP de forma **totalmente natural** no Cursor Agent! Sem comandos técnicos, sem sintaxe complexa - apenas conversa fluida e intuitiva.
 
-3. **Context Management**
-   - The server will maintain the current database context
-   - If no database is specified, it uses the last selected database
-   - Example: "Show all tables" (uses current database context)
+## 💬 **Como Usar - Linguagem Natural**
 
-## Token Management Strategy
+### **Exemplos de Conversas Naturais:**
 
-The server will implement a sophisticated token management system:
+#### **1. Criar PRPs Automaticamente:**
+```
+Você: "Crie um PRP para implementar autenticação JWT neste projeto"
+Agente: 🎯 **PRP Criado com Sucesso!**
+       Analisei automaticamente o contexto e criei um PRP estruturado...
 
-```mermaid
-graph TD
-    A[Token Request] --> B{Token in Cache?}
-    B -->|Yes| C[Return Cached Token]
-    B -->|No| D[Generate New Token]
-    D --> E[Store in Cache]
-    E --> F[Return New Token]
-
-    G[Periodic Cleanup] --> H[Remove Expired Tokens]
+Você: "Preciso de um PRP para o sistema de pagamentos"
+Agente: 🎯 **PRP Criado com Sucesso!**
+       Identifiquei os requisitos e criei tarefas específicas...
 ```
 
-1. **Token Cache**
+#### **2. Analisar Código Automaticamente:**
+```
+Você: "Analise este arquivo e sugira melhorias"
+Agente: 🔍 **Análise Completa Realizada**
+       Identifiquei 3 melhorias principais e criei PRPs para cada uma...
 
-   - In-memory cache of database tokens
-   - Indexed by database name
-   - Includes expiration information
+Você: "Revisa este código e me diz o que pode ser melhorado"
+Agente: 🔍 **Análise Completa Realizada**
+       Encontrei padrões que podem ser otimizados...
+```
 
-2. **Token Generation**
+#### **3. Buscar e Gerenciar PRPs:**
+```
+Você: "Mostra todos os PRPs relacionados a autenticação"
+Agente: 📋 **PRPs Encontrados**
+       Encontrei 5 PRPs relacionados, ordenados por prioridade...
 
-   - Uses organization token to generate database tokens
-   - Sets appropriate permissions (read-only vs. full-access)
-   - Sets reasonable expiration times (configurable)
+Você: "Quais são as tarefas pendentes mais importantes?"
+Agente: 📊 **Status do Projeto**
+       Identifiquei 3 tarefas críticas que precisam de atenção...
+```
 
-3. **Token Rotation**
-   - Handles token expiration gracefully
-   - Regenerates tokens when needed
-   - Implements retry logic for failed requests
+#### **4. Obter Insights do Projeto:**
+```
+Você: "Como está o progresso do projeto?"
+Agente: 📊 **Status do Projeto**
+       • 15 PRPs criados, 8 concluídos
+       • 3 tarefas críticas pendentes
+       • Riscos identificados: segurança, performance
 
-## Configuration Requirements
+Você: "Me dá um resumo do que foi feito hoje"
+Agente: 📝 **Resumo da Conversa**
+       • 5 PRPs criados
+       • 3 análises de código realizadas
+       • 2 tarefas atualizadas
+```
 
-```typescript
-const ConfigSchema = z.object({
-	// Organization-level authentication
-	TURSO_API_TOKEN: z.string().min(1),
-	TURSO_ORGANIZATION: z.string().min(1),
+## 🚀 **Funcionalidades Principais**
 
-	// Optional default database
-	TURSO_DEFAULT_DATABASE: z.string().optional(),
+### **✅ Análise Automática de Arquivos**
+- **Como usar:** "Analise este arquivo"
+- **O que faz:** Identifica funcionalidades, sugere melhorias, cria PRPs automaticamente
+- **Resultado:** PRPs estruturados com tarefas específicas
 
-	// Token management settings
-	TOKEN_EXPIRATION: z.string().default(''7d''),
-	TOKEN_PERMISSION: z
-		.enum([''full-access'', ''read-only''])
-		.default(''full-access''),
+### **✅ Criação Inteligente de PRPs**
+- **Como usar:** "Crie um PRP para [funcionalidade]"
+- **O que faz:** Analisa contexto, extrai requisitos, estrutura automaticamente
+- **Resultado:** PRP completo com objetivos, tarefas e prioridades
 
-	// Server settings
-	PORT: z.string().default(''3000''),
-});
+### **✅ Busca Contextual**
+- **Como usar:** "Encontra PRPs sobre [tópico]"
+- **O que faz:** Busca inteligente considerando contexto atual
+- **Resultado:** Lista relevante e ordenada por prioridade
 
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '03-turso-database/README.md',
-    '03 Turso Database',
-    '# 03 Turso Database
+### **✅ Insights do Projeto**
+- **Como usar:** "Como está o projeto?"
+- **O que faz:** Analisa status geral, identifica riscos, sugere melhorias
+- **Resultado:** Relatório completo de progresso
 
-Configuração e uso do Turso Database
+### **✅ Criação de Tarefas**
+- **Como usar:** "Cria tarefas baseadas neste código"
+- **O que faz:** Analisa código, identifica ações necessárias
+- **Resultado:** Lista de tarefas acionáveis
 
+## 🎯 **Fluxo de Trabalho Natural**
 
-## 📁 Configuration
+### **1. Desenvolvimento Diário:**
+```
+1. Você escreve código
+2. Diz: "Analise este arquivo"
+3. Agente cria PRPs automaticamente
+4. Você continua desenvolvendo
+5. Agente mantém histórico e contexto
+```
 
-- [TURSO_CONFIGURATION_SUMMARY.md](./configuration/TURSO_CONFIGURATION_SUMMARY.md)
-- [ENV_CONFIGURATION_SUMMARY.md](./configuration/ENV_CONFIGURATION_SUMMARY.md)
+### **2. Planejamento de Features:**
+```
+1. Você diz: "Preciso implementar login social"
+2. Agente cria PRP completo
+3. Extrai tarefas específicas
+4. Estima complexidade
+5. Sugere próximos passos
+```
 
-## 📁 Documentation
+### **3. Revisão de Código:**
+```
+1. Você diz: "Revisa este código"
+2. Agente analisa automaticamente
+3. Identifica melhorias
+4. Cria PRPs para correções
+5. Sugere otimizações
+```
 
-- [TURSO_MEMORY_README.md](./documentation/TURSO_MEMORY_README.md)
-- [GUIA_COMPLETO_TURSO_MCP.md](./documentation/GUIA_COMPLETO_TURSO_MCP.md)
+## 💡 **Dicas de Uso**
 
-## 📁 Migration
+### **🎯 Seja Específico:**
+```
+❌ "Analisa isso"
+✅ "Analise este sistema de autenticação e sugira melhorias de segurança"
+```
 
-- [MCP_TURSO_MIGRATION_PLAN.md](./migration/MCP_TURSO_MIGRATION_PLAN.md)
-- [DOCS_TURSO_MIGRATION_SUCCESS.md](./migration/DOCS_TURSO_MIGRATION_SUCCESS.md)
-',
-    '# 03 Turso Database
+### **🎯 Use Contexto:**
+```
+❌ "Crie um PRP"
+✅ "Crie um PRP para implementar cache Redis neste projeto de e-commerce"
+```
 
-Configuração e uso do Turso Database
+### **🎯 Peça Detalhes:**
+```
+❌ "Como está o projeto?"
+✅ "Me dá um resumo detalhado dos PRPs de alta prioridade e suas dependências"
+```
 
+### **🎯 Mantenha Conversa:**
+```
+❌ (Faz várias perguntas separadas)
+✅ "Analise este arquivo, depois me sugira melhorias e crie PRPs para as mais importantes"
+```
 
-## 📁 Configuration
+## 🔧 **Integração com Cursor Agent**
 
-- [TURSO_CONFIGURATION_SUMMARY.md](./configuration/TURSO_CONFIGURATION_SUMMARY.md)
-- [ENV_CONFIGURATION_SUMMARY.md](./configuration/ENV_CONFIGURATION_SUMMARY.md)
+### **Configuração Automática:**
+O agente PRP está integrado automaticamente ao Cursor Agent. Não precisa de configuração adicional!
 
-## 📁 Documentation
+### **Uso Direto:**
+- Digite suas solicitações naturalmente no chat do Cursor
+- O agente entende contexto e mantém histórico
+- Respostas são formatadas de forma clara e acionável
 
-- [TURSO_MEMORY_README.md](./documentation/TURSO_MEMORY_README.md)
-- [GUIA_COMPLETO_TURSO_MCP.md](./documentation/GUIA_COMPLETO_TURSO_MCP.md)
+### **Contexto Inteligente:**
+- O agente considera o arquivo atual
+- Mantém histórico da conversa
+- Aprende com padrões do projeto
 
-## 📁 Migration
+## 📊 **Exemplos Práticos**
 
-- [MCP_TURSO_MIGRATION_PLAN.md](./migration/MCP_TURSO_MIGRATION_PLAN.md)
-- [DOCS_TURSO_MIGRATION_SUCCESS.md](./migration/DOCS_TURSO_MIGRATION_SUCCESS.md)
-',
-    '03-turso-database',
+### **Exemplo 1: Desenvolvimento de Feature**
+```
+Você: "Estou implementando um sistema de notificações push. Analise este código e crie PRPs para as próximas etapas."
+
+Agente: 🎯 **PRP Criado com Sucesso!**
+
+**Sistema de Notificações Push - Fase 2**
+- ✅ Análise do código atual realizada
+- 📋 5 tarefas criadas automaticamente:
+  1. Implementar retry logic para falhas
+  2. Adicionar métricas de entrega
+  3. Criar dashboard de monitoramento
+  4. Implementar rate limiting
+  5. Adicionar testes de integração
+
+💡 **Próximos passos:**
+• Priorize as tarefas 1 e 3 (críticas)
+• Considere implementar A/B testing
+• Monitore performance das notificações
+
+Quer que eu detalhe alguma tarefa específica?
+```
+
+### **Exemplo 2: Revisão de Código**
+```
+Você: "Revisa este código de autenticação e me diz o que pode ser melhorado."
+
+Agente: 🔍 **Análise Completa Realizada**
+
+**Problemas Identificados:**
+1. ❌ Falta validação de força de senha
+2. ⚠️ Rate limiting não implementado
+3. 🔒 Logs sensíveis expostos
+4. 🧪 Testes de segurança ausentes
+
+**PRPs Criados Automaticamente:**
+- PRP #12: Melhorar segurança de autenticação
+- PRP #13: Implementar rate limiting
+- PRP #14: Adicionar testes de segurança
+
+📊 **Insights encontrados:**
+• Complexidade: Média
+• Riscos: Alto (segurança)
+• Tempo estimado: 2-3 sprints
+
+Quer que eu detalhe algum aspecto específico?
+```
+
+### **Exemplo 3: Status do Projeto**
+```
+Você: "Como está o progresso do projeto de e-commerce?"
+
+Agente: 📊 **Status do Projeto**
+
+**Métricas Gerais:**
+• 23 PRPs criados, 15 concluídos (65%)
+• 8 PRPs ativos, 3 críticos
+• Velocidade: 2.3 PRPs/sprint
+
+**Tarefas Críticas Pendentes:**
+1. 🔴 Sistema de pagamentos (atrasado 1 sprint)
+2. 🔴 Testes de carga (pendente)
+3. 🟡 Integração com gateway (em progresso)
+
+**Riscos Identificados:**
+• Performance em picos de tráfego
+• Segurança de dados de pagamento
+• Escalabilidade do banco de dados
+
+**Sugestões de Melhoria:**
+• Focar em PRPs críticos primeiro
+• Implementar monitoramento contínuo
+• Revisar arquitetura de pagamentos
+
+Quer que eu crie um plano de ação detalhado?
+```
+
+## 🎉 **Benefícios da Integração Natural**
+
+### **✅ Para o Desenvolvedor:**
+- **Zero Curva de Aprendizado** - Use linguagem natural
+- **Contexto Inteligente** - Agente entende o projeto
+- **Automação Total** - PRPs criados automaticamente
+- **Histórico Persistente** - Conversas mantidas
+
+### **✅ Para o Projeto:**
+- **Documentação Automática** - PRPs estruturados
+- **Qualidade Constante** - Análise contínua
+- **Produtividade 10x** - Menos tempo em tarefas repetitivas
+- **Visibilidade Total** - Status sempre atualizado
+
+### **✅ Para a Equipe:**
+- **Padronização** - PRPs seguem padrões consistentes
+- **Colaboração** - Contexto compartilhado
+- **Aprendizado** - Histórico de decisões preservado
+- **Escalabilidade** - Sistema cresce com o projeto
+
+## 🚀 **Próximos Passos**
+
+1. **Comece Agora:** Digite sua primeira solicitação natural
+2. **Explore Funcionalidades:** Teste diferentes tipos de análise
+3. **Mantenha Conversa:** Use o histórico para contexto
+4. **Personalize:** O agente aprende com seu estilo
+
+---
+
+**🎯 Resultado:** Desenvolvimento 10x mais produtivo com documentação automática e insights inteligentes, tudo através de conversa natural! 🚀
+
+**💡 Dica:** Quanto mais natural você for, melhor o agente entenderá suas necessidades! ',
+    '# 🤖 Uso Natural do Agente PRP no Cursor Agent ## 🎯 **Visão Geral** Agora você pode usar o agente PRP de forma **totalmente natural** no Cursor Agent! Sem comandos técnicos, sem sintaxe complexa - apenas conversa fluida e intuitiva. ## 💬 **Como Usar - Linguagem Natural** ### **Exemplos de...',
+    'getting-started',
     'root',
-    '10f01b320d5e891d4ba70991d4c567b7fe0ae114d975e2196272e60ee2875ed7',
-    576,
-    '2025-08-02T07:37:45.709136',
-    '{"synced_at": "2025-08-02T07:38:03.905700", "sync_version": "1.0"}'
+    '8c8d02e30384a98fe9786c15ebff43fd2207d4c67080c3c03f45311148a4862c',
+    7969,
+    '2025-08-02T07:12:29.159150',
+    '{"synced_at": "2025-08-03T03:32:01.087266", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -1133,56 +2134,339 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '02-mcp-integration/README.md',
-    '02 Mcp Integration',
-    '# 02 Mcp Integration
+    'getting-started/DEPENDENCY_MANAGEMENT_DECISION.md',
+    '🎯 Decisão Final: UV para PRP Agent',
+    '# 🎯 Decisão Final: UV para PRP Agent
 
-Integração com Model Context Protocol
+## ✅ **RECOMENDAÇÃO: UV (Ultra-Violet)**
 
+Após análise completa do projeto PRP Agent, **UV é definitivamente a melhor escolha** para gerenciamento de dependências.
 
-## 📁 Configuration
+---
 
-- [ATIVACAO_MCP_REAL_CURSOR.md](./configuration/ATIVACAO_MCP_REAL_CURSOR.md)
-- [CONFIGURACAO_CURSOR_MCP.md](./configuration/CONFIGURACAO_CURSOR_MCP.md)
-- [MCP_ENV_CAPABILITIES.md](./configuration/MCP_ENV_CAPABILITIES.md)
+## 🔍 **Análise do Projeto Atual:**
 
-## 📁 Implementation
+### **📊 Estado Detectado:**
+- ✅ **Python 3.13.2** (moderno, compatível)
+- ✅ **UV 0.7.19** já instalado no sistema
+- ✅ **pip + requirements.txt** simples (fácil migração)
+- ✅ **venv/** configurado (mantém compatibilidade)
+- ✅ **Stack AI moderno** (PydanticAI, FastAPI, Sentry)
 
-- [MCP_SYNC_INTELIGENTE_IMPLEMENTADO.md](./implementation/MCP_SYNC_INTELIGENTE_IMPLEMENTADO.md)
-- [INTEGRACAO_TURSO_MCP_FINAL.md](./implementation/INTEGRACAO_TURSO_MCP_FINAL.md)
+### **📋 Dependencies Atuais:**
+```bash
+# requirements.txt (mínimo):
+sentry-sdk[fastapi]==1.40.0
+```
 
-## 📁 Reference
+---
 
-- [mcp-comparison-diagram.md](./reference/mcp-comparison-diagram.md)
-- [MCP_SERVERS_STATUS.md](./reference/MCP_SERVERS_STATUS.md)
-',
-    '# 02 Mcp Integration
+## 🚀 **Por que UV é IDEAL:**
 
-Integração com Model Context Protocol
+### **⚡ Performance (CRÍTICA para AI):**
+```bash
+❌ pip install numpy torch          # 2-5 minutos
+✅ uv add numpy torch               # 10-30 segundos
 
+❌ pip install -r requirements.txt  # 30s-2min  
+✅ uv sync                          # 3-10 segundos
+```
 
-## 📁 Configuration
+### **🤖 Específico para Agentes AI:**
+```bash
+✅ Resolução otimizada para libs científicas (numpy, torch)
+✅ Cache inteligente para grandes dependências ML
+✅ Parallel downloads (essencial para LLM libs)
+✅ Lock files determinísticos (reprodutibilidade AI)
+✅ Compatibilidade total com PydanticAI ecosystem
+```
 
-- [ATIVACAO_MCP_REAL_CURSOR.md](./configuration/ATIVACAO_MCP_REAL_CURSOR.md)
-- [CONFIGURACAO_CURSOR_MCP.md](./configuration/CONFIGURACAO_CURSOR_MCP.md)
-- [MCP_ENV_CAPABILITIES.md](./configuration/MCP_ENV_CAPABILITIES.md)
+### **🔧 Integração PRP Agent:**
+```bash
+✅ FastAPI: Suporte nativo otimizado
+✅ Sentry: Instalação 10x mais rápida
+✅ MCP Tools: Resolução de deps eficiente
+✅ Requirements.txt: Compatibilidade total (migração zero-friction)
+```
 
-## 📁 Implementation
+---
 
-- [MCP_SYNC_INTELIGENTE_IMPLEMENTADO.md](./implementation/MCP_SYNC_INTELIGENTE_IMPLEMENTADO.md)
-- [INTEGRACAO_TURSO_MCP_FINAL.md](./implementation/INTEGRACAO_TURSO_MCP_FINAL.md)
+## 📊 **Comparação Definitiva:**
 
-## 📁 Reference
+### **🐌 pip (atual):**
+```bash
+Velocidade:    ⭐⭐ (lento)
+AI/ML:         ⭐⭐ (básico)
+Reprodução:    ⭐⭐ (sem lock)
+Ecossistema:   ⭐⭐⭐⭐ (universal)
+Migração:      ⭐⭐⭐⭐⭐ (já usando)
+```
 
-- [mcp-comparison-diagram.md](./reference/mcp-comparison-diagram.md)
-- [MCP_SERVERS_STATUS.md](./reference/MCP_SERVERS_STATUS.md)
-',
-    '02-mcp-integration',
+### **📚 Poetry:**
+```bash
+Velocidade:    ⭐⭐ (lento)
+AI/ML:         ⭐⭐⭐ (ok)
+Reprodução:    ⭐⭐⭐⭐⭐ (lock files)
+Ecossistema:   ⭐⭐⭐⭐ (popular)
+Migração:      ⭐⭐ (complexa)
+```
+
+### **⚡ UV (recomendado):**
+```bash
+Velocidade:    ⭐⭐⭐⭐⭐ (ultra-rápido)
+AI/ML:         ⭐⭐⭐⭐⭐ (otimizado)
+Reprodução:    ⭐⭐⭐⭐⭐ (lock moderno)
+Ecossistema:   ⭐⭐⭐⭐ (crescendo rápido)
+Migração:      ⭐⭐⭐⭐⭐ (zero-friction)
+```
+
+---
+
+## 🛠️ **Plano de Migração (5 minutos):**
+
+### **1️⃣ Backup Seguro (30s):**
+```bash
+cp requirements.txt requirements.txt.backup
+cp -r venv/ venv.backup/
+```
+
+### **2️⃣ Inicializar UV (30s):**
+```bash
+uv init --no-readme
+# Cria pyproject.toml otimizado
+```
+
+### **3️⃣ Migrar Dependencies (2 min):**
+```bash
+uv add sentry-sdk[fastapi]
+uv add pydantic-ai fastapi uvicorn python-dotenv
+uv add --dev pytest black ruff mypy
+```
+
+### **4️⃣ Testar (1 min):**
+```bash
+uv run python sentry_ai_agent_setup.py
+uv run python -c "import pydantic_ai, fastapi;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'mcp-integration/MCP_VERIFICATION_GUIDE.md',
+    '🔍 Guia de Verificação dos Servidores MCP',
+    '# 🔍 Guia de Verificação dos Servidores MCP
+
+## 📋 Checklist de Verificação
+
+### 1. **Verificar Instalação no Claude Code**
+
+```bash
+# Listar todos os servidores MCP instalados
+claude mcp list
+```
+
+Você deve ver:
+- ✅ `claude-flow` - Servidor de coordenação e swarms
+- ✅ `turso` - Servidor de banco de dados
+- ✅ `sentry` - Servidor de monitoramento (se instalado)
+
+### 2. **Verificar Ferramentas Disponíveis**
+
+No Claude Code, as ferramentas MCP aparecem com o prefixo `mcp__[servidor]__[ferramenta]`.
+
+#### **Claude Flow Tools:**
+```
+mcp__claude-flow__swarm_init
+mcp__claude-flow__agent_spawn
+mcp__claude-flow__task_orchestrate
+mcp__claude-flow__memory_usage
+mcp__claude-flow__swarm_status
+```
+
+#### **Turso Tools:**
+```
+mcp__turso__list_databases
+mcp__turso__execute_query
+mcp__turso__execute_read_only_query
+mcp__turso__search_knowledge
+```
+
+#### **Sentry Tools (se instalado):**
+```
+mcp__sentry__list_projects
+mcp__sentry__capture_message
+mcp__sentry__get_issues
+```
+
+### 3. **Teste Rápido de Cada Servidor**
+
+#### **Testar Claude Flow:**
+```javascript
+// Verificar status do servidor
+mcp__claude-flow__features_detect
+
+// Teste básico de swarm
+mcp__claude-flow__swarm_init {
+  topology: "mesh",
+  maxAgents: 3,
+  strategy: "balanced"
+}
+
+// Verificar se funcionou
+mcp__claude-flow__swarm_status
+```
+
+#### **Testar Turso:**
+```javascript
+// Listar bancos de dados
+mcp__turso__list_databases
+
+// Buscar conhecimento
+mcp__turso__search_knowledge {
+  query: "test"
+}
+```
+
+#### **Testar Sentry:**
+```javascript
+// Listar projetos
+mcp__sentry__list_projects
+
+// Enviar mensagem de teste
+mcp__sentry__capture_message {
+  message: "MCP Test Message",
+  level: "info"
+}
+```
+
+## 🚨 Troubleshooting Comum
+
+### **Problema: Ferramentas não aparecem**
+
+**Verificações:**
+1. Servidor está instalado? `claude mcp list`
+2. Servidor está rodando? (para servidores locais)
+3. Claude Code foi reiniciado após instalação?
+
+**Soluções:**
+```bash
+# Reinstalar servidor
+claude mcp remove [nome-servidor]
+claude mcp add [nome-servidor] [comando]
+
+# Para Claude Flow
+claude mcp remove claude-flow
+claude mcp add claude-flow npx claude-flow@alpha mcp start
+
+# Reiniciar Claude Code
+# Feche e abra o Claude Code novamente
+```
+
+### **Problema: Erro de conexão**
+
+**Verificar logs:**
+```bash
+# Ver logs do servidor
+claude mcp logs [nome-servidor]
+
+# Exemplo
+claude mcp logs claude-flow
+```
+
+### **Problema: Servidor local não conecta**
+
+**Para servidores locais (Turso, Sentry):**
+```bash
+# Usar o script de inicialização
+./start-all-mcp.sh
+
+# Ou iniciar individualmente
+cd mcp-turso && ./start-mcp.sh
+cd mcp-sentry && ./start-mcp.sh
+cd mcp-claude-flow && ./start-claude-flow.sh
+```
+
+## 📊 Status de Configuração
+
+### **Verificação Completa:**
+
+| Servidor | Tipo | Status | Comando de Instalação |
+|----------|------|--------|----------------------|
+| Claude Flow | NPX | ✅ Ativo | `claude mcp add claude-flow npx claude-flow@alpha mcp start` |
+| Turso | Local | ✅ Ativo | Requer configuração local + `./start-mcp.sh` |
+| Sentry | Local | ✅ Ativo | Requer configuração local + `./start-mcp.sh` |
+
+### **Arquitetura de Integração:**
+
+```
+┌─────────────────┐
+│   Claude Code   │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │   MCP   │
+    │Protocol │
+    └────┬────┘
+         │
+    ┌────┴────────────────┬─────────────────┬─────────────────┐
+    │                     │                 │                 │
+┌───▼────────┐    ┌──────▼──────┐   ┌─────▼──────┐   ┌─────▼──────┐
+│Claude Flow │    │    Turso    │   │   Sentry   │   │   Others   │
+│   (NPX)    │    │   (Local)   │   │  (Local)   │   │    ...     │
+└────────────┘    └─────────────┘   └────────────┘   └────────────┘
+```
+
+## 🎯 Comandos Úteis
+
+### **Gerenciamento de Servidores:**
+```bash
+# Listar servidores
+claude mcp list
+
+# Ver detalhes de um servidor
+claude mcp info [nome-servidor]
+
+# Ver logs
+claude mcp logs [nome-servidor]
+
+# Atualizar servidor
+claude mcp update [nome-servidor]
+
+# Remover servidor
+claude mcp remove [nome-servidor]
+```
+
+### **Scripts de Automação:**
+```bash
+# Iniciar todos os servidores locais
+./start-all-mcp.sh
+
+# Verificar status
+ps aux | grep -E "mcp|claude-flow|turso|sentry"
+```
+
+## ✅ Checklist Final
+
+- [ ] Claude Flow instalado via `claude mcp add`
+- [ ] Turso configurado e script executável
+- [ ] Sentry configurado e script executável (opcional)
+- [ ] Todos os servidores aparecem em `claude mcp list`
+- [ ] Ferramentas MCP visíveis no Claude Code
+- [ ] Testes básicos executados com sucesso
+- [ ] Documentação atualizada com configurações específicas
+
+---
+
+**Status**: ✅ Guia de Verificação Completo  
+**Data**: 03/08/2025  
+**Versão**: 1.0.0',
+    '# 🔍 Guia de Verificação dos Servidores MCP ## 📋 Checklist de Verificação ### 1. **Verificar Instalação no Claude Code** ```bash # Listar todos os servidores MCP instalados claude mcp list ``` Você deve ver: - ✅ `claude-flow` - Servidor de coordenação e swarms - ✅ `turso` - Servidor de...',
+    'mcp-integration',
     'root',
-    'f854b3bdd970688bb9d308a5ac30ded9554d103443274637018679d9093188fd',
-    650,
-    '2025-08-02T07:37:45.708872',
-    '{"synced_at": "2025-08-02T07:38:03.905784", "sync_version": "1.0"}'
+    '8fcf1534e4da1256a299c2253980779f8cd3a69b65df489e2c885fb806d20deb',
+    4616,
+    '2025-08-02T22:22:08.806867',
+    '{"synced_at": "2025-08-03T03:32:01.088115", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -1195,142 +2479,4 @@ ON CONFLICT(file_path) DO UPDATE SET
     last_modified = excluded.last_modified,
     metadata = excluded.metadata,
     updated_at = CURRENT_TIMESTAMP;
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '06-system-status/README.md',
-    '06 System Status',
-    '# 06 System Status
-
-Status e relatórios do sistema
-
-
-## 📁 Current
-
-- [SISTEMA_FINAL_SIMPLIFICADO_FUNCIONANDO.md](./current/SISTEMA_FINAL_SIMPLIFICADO_FUNCIONANDO.md)
-- [MEMORY_SYSTEM_STATUS.md](./current/MEMORY_SYSTEM_STATUS.md)
-- [MEMORY_SYSTEM_SUMMARY.md](./current/MEMORY_SYSTEM_SUMMARY.md)
-- [TURSO_MCP_STATUS.md](./current/TURSO_MCP_STATUS.md)
-
-## 📁 Completed
-
-- [SISTEMA_DOCS_CLUSTERS_FUNCIONANDO.md](./completed/SISTEMA_DOCS_CLUSTERS_FUNCIONANDO.md)
-',
-    '# 06 System Status
-
-Status e relatórios do sistema
-
-
-## 📁 Current
-
-- [SISTEMA_FINAL_SIMPLIFICADO_FUNCIONANDO.md](./current/SISTEMA_FINAL_SIMPLIFICADO_FUNCIONANDO.md)
-- [MEMORY_SYSTEM_STATUS.md](./current/MEMORY_SYSTEM_STATUS.md)
-- [MEMORY_SYSTEM_SUMMARY.md](./current/MEMORY_SYSTEM_SUMMARY.md)
-- [TURSO_MCP_STATUS.md](./current/TURSO_MCP_STATUS.md)
-
-## 📁 Completed
-
-- [SISTEMA_DOCS_CLUSTERS_FUNCIONANDO.md](./completed/SISTEMA_DOCS_CLUSTERS_FUNCIONANDO.md)
-',
-    '06-system-status',
-    'root',
-    'f75d9a627c1682bab35727e0980372cc78b23cbcfd425e5a0bc66091f83d2a90',
-    457,
-    '2025-08-02T07:37:45.709741',
-    '{"synced_at": "2025-08-02T07:38:03.905865", "sync_version": "1.0"}'
-)
-ON CONFLICT(file_path) DO UPDATE SET
-    title = excluded.title,
-    content = excluded.content,
-    summary = excluded.summary,
-    cluster = excluded.cluster,
-    category = excluded.category,
-    file_hash = excluded.file_hash,
-    size = excluded.size,
-    last_modified = excluded.last_modified,
-    metadata = excluded.metadata,
-    updated_at = CURRENT_TIMESTAMP;
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '06-system-status/completed/SISTEMA_DOCS_CLUSTERS_FUNCIONANDO.md',
-    '🎉 SUCESSO! Sistema de Documentação em Clusters Funcionando',
-    '# 🎉 SUCESSO! Sistema de Documentação em Clusters Funcionando
-
-## ✅ **MISSÃO CUMPRIDA - DADOS REAIS FUNCIONANDO!**
-
-Conforme solicitado, **RECRIAMOS** todo o sistema com **DADOS DEMONSTRATIVOS REAIS** organizados em **clusters inteligentes**! 🚀
-
----
-
-## 📊 **RESULTADOS COMPROVADOS**
-
-### **📚 Sistema Populado e Funcional:**
-- ✅ **13 documentos ativos** com dados reais
-- ✅ **8 clusters organizacionais** temáticos
-- ✅ **2 documentos obsoletos** demonstrando gestão de ciclo de vida
-- ✅ **15 tags estruturadas** com categorização automática
-- ✅ **2.000+ visualizações** simuladas para demonstrar analytics
-- ✅ **Qualidade média 8.7/10** com scores reais de engajamento
-
-### **🎯 Clusters Organizados e Funcionais:**
-
-#### **🔌 MCP Core (8.5/10 qualidade)**
-- 📄 MCP Overview - Visão Geral do Protocolo (9.0/10)
-- 📄 Arquitetura MCP - Como Funciona (8.5/10)  
-- 📄 MCP Best Practices - Melhores Práticas (8.0/10)
-
-#### **🔗 MCP Integração (9.0/10 qualidade)**
-- 📄 Integração MCP com Cursor IDE (9.5/10) - **SUBSTITUI** documento obsoleto
-- 📄 Cliente MCP em Python (8.5/10)
-
-#### **🗄️ Turso Configuração (8.8/10 qualidade)**
-- 📄 Guia de Setup do Turso Database (9.0/10) - **SUBSTITUI** setup depreciado
-- 📄 Gerenciamento de Tokens Turso (8.5/10)
-
-#### **⚡ Turso Uso (9.5/10 qualidade)**
-- 📄 Integração Turso + MCP (9.5/10) - **MAIOR VISUALIZAÇÃO** (230 views)
-
-#### **📋 Sistema PRP (8.8/10 qualidade)**
-- 📄 Metodologia PRP - Product Requirement Prompts (9.0/10)
-- 📄 Usando o Agente PRP (8.5/10)
-
-#### **🎯 Guias Finais (9.5/10 qualidade)**
-- 📄 Guia Final - Integração Completa (9.5/10) - **DOCUMENTO DEFINITIVO**
-
----
-
-## 🔄 **GESTÃO DE CICLO DE VIDA FUNCIONANDO**
-
-### **✅ Sistema de Obsolescência Ativo:**
-
-**❌ Documentos Obsoletos Identificados:**
-- `Configuração MCP Antiga (OBSOLETO)` → **Substituído por** `Integração MCP com Cursor IDE`
-- `Setup Turso Depreciado` → **Substituído por** `Guia de Setup do Turso Database`
-
-**🔍 Análise Automática de Obsolescência:**
-- **Score 0.75/1.0** (alta obsolescência detectada)
-- **Confiança 0.90** (alta confiança na análise)
-- **Recomendação:** `archive` (arquivar automaticamente)
-
-### **📈 Rastreamento de Mudanças:**
-- ✅ **Histórico completo** de criação, atualização e supersedência
-- ✅ **Triggers automáticos** para registrar mudanças
-- ✅ **Timestamps precisos** de todas as operações
-- ✅ **Motivos documentados** para cada mudança
-
----
-
-## 🎯 **FUNCIONALIDADES DEMONSTRADAS**
-
-### **🔍 1. Busca Inteligente por Clusters:**
-```sql
--- Buscar "turso" em todos os clusters
-SELECT title, cluster_name, quality_score 
-FROM docs WHERE keywords LIKE ''%turso%'' 
-ORDER BY quality_score DESC;
 

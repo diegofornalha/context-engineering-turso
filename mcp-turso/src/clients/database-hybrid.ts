@@ -1,50 +1,44 @@
 /**
- * Hybrid database client for local and cloud Turso databases
+ * Cloud-only database client for Turso databases
  */
 import { createClient, type Client, type InStatement } from '@libsql/client';
-import { get_hybrid_config, is_local_mode } from '../config-hybrid.js';
+import { get_cloud_config } from '../config-hybrid.js';
 import type { DatabaseTool } from '../common/types.js';
 
-export class HybridDatabaseClient {
-	private local_client: Client | null = null;
+export class CloudDatabaseClient {
+	private cloud_client: Client | null = null;
 	
 	/**
-	 * Get or create local database client
+	 * Get or create cloud database client
 	 */
-	private get_local_client(): Client {
-		if (!this.local_client) {
-			const config = get_hybrid_config();
-			this.local_client = createClient({
-				url: config.TURSO_LOCAL_URL,
+	private get_cloud_client(): Client {
+		if (!this.cloud_client) {
+			const config = get_cloud_config();
+			this.cloud_client = createClient({
+				url: `https://${config.TURSO_DEFAULT_DATABASE}-${config.TURSO_ORGANIZATION}.aws-us-east-1.turso.io`,
+				authToken: config.TURSO_API_TOKEN,
 			});
 		}
-		return this.local_client;
+		return this.cloud_client;
 	}
 	
 	/**
-	 * Execute a query (local or cloud)
+	 * Execute a query (cloud only)
 	 */
 	async execute_query(query: string, database?: string): Promise<DatabaseTool> {
-		// For local mode, always use local client
-		if (is_local_mode()) {
-			const client = this.get_local_client();
-			const result = await client.execute(query);
-			
-			return {
-				rows: result.rows as Record<string, unknown>[],
-				columns: result.columns || [],
-				rowsAffected: result.rowsAffected || 0,
-				lastInsertRowid: result.lastInsertRowid?.toString(),
-			};
-		}
+		const client = this.get_cloud_client();
+		const result = await client.execute(query);
 		
-		// For cloud mode, delegate to cloud implementation
-		// This would need the cloud client implementation
-		throw new Error('Cloud mode not implemented in hybrid client yet');
+		return {
+			rows: result.rows as Record<string, unknown>[],
+			columns: result.columns || [],
+			rowsAffected: result.rowsAffected || 0,
+			lastInsertRowid: result.lastInsertRowid?.toString(),
+		};
 	}
 	
 	/**
-	 * Execute a read-only query (safe for all modes)
+	 * Execute a read-only query (safe for all operations)
 	 */
 	async execute_read_only_query(query: string, database?: string): Promise<DatabaseTool> {
 		// Validate it's actually read-only
@@ -59,62 +53,60 @@ export class HybridDatabaseClient {
 	}
 	
 	/**
-	 * List databases (local mode returns fixed response)
+	 * List databases (cloud only)
 	 */
 	async list_databases(): Promise<Array<{ name: string; regions?: string[] }>> {
-		if (is_local_mode()) {
-			// For local mode, return a fixed local database
-			return [{
-				name: 'local',
-				regions: ['local'],
-			}];
-		}
-		
-		// For cloud mode, would need to implement API call
-		throw new Error('Cloud mode not implemented in hybrid client yet');
+		// For cloud mode, return the configured database
+		const config = get_cloud_config();
+		return [{
+			name: config.TURSO_DEFAULT_DATABASE,
+			regions: ['aws-us-east-1'],
+		}];
 	}
 	
 	/**
 	 * Get database info
 	 */
 	async get_database_info(database: string): Promise<any> {
-		if (is_local_mode()) {
-			const client = this.get_local_client();
-			
-			// Get table count
-			const tables = await client.execute(`
-				SELECT COUNT(*) as count 
-				FROM sqlite_master 
-				WHERE type='table' AND name NOT LIKE 'sqlite_%'
-			`);
-			
-			// Get database size (approximate)
-			const pages = await client.execute('PRAGMA page_count');
-			const pageSize = await client.execute('PRAGMA page_size');
-			
-			const pageCount = Number(pages.rows[0]?.page_count || 0);
-			const pageSizeBytes = Number(pageSize.rows[0]?.page_size || 0);
-			const sizeBytes = pageCount * pageSizeBytes;
-			
-			return {
-				name: 'local',
-				tables: Number(tables.rows[0]?.count || 0),
-				size: `${(sizeBytes / 1024 / 1024).toFixed(2)} MB`,
-				location: 'Local (127.0.0.1:8080)',
-			};
-		}
+		const client = this.get_cloud_client();
 		
-		// For cloud mode, would need to implement API call
-		throw new Error('Cloud mode not implemented in hybrid client yet');
+		// Get table count
+		const tables = await client.execute(`
+			SELECT COUNT(*) as count 
+			FROM sqlite_master 
+			WHERE type='table' AND name NOT LIKE 'sqlite_%'
+		`);
+		
+		// Get database size (approximate)
+		const pages = await client.execute('PRAGMA page_count');
+		const pageSize = await client.execute('PRAGMA page_size');
+		
+		const pageCount = Number(pages.rows[0]?.page_count || 0);
+		const pageSizeBytes = Number(pageSize.rows[0]?.page_size || 0);
+		const sizeBytes = pageCount * pageSizeBytes;
+		
+		return {
+			name: database,
+			tableCount: Number(tables.rows[0]?.count || 0),
+			sizeBytes,
+			sizeMB: Math.round(sizeBytes / (1024 * 1024) * 100) / 100,
+			region: 'aws-us-east-1',
+			type: 'cloud',
+		};
 	}
 	
 	/**
-	 * Close connections
+	 * Close the client connection
 	 */
 	close(): void {
-		if (this.local_client) {
-			this.local_client.close();
-			this.local_client = null;
+		if (this.cloud_client) {
+			this.cloud_client.close();
+			this.cloud_client = null;
 		}
 	}
+}
+
+// Legacy class name for compatibility
+export class HybridDatabaseClient extends CloudDatabaseClient {
+	// All functionality inherited from CloudDatabaseClient
 }

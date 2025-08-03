@@ -4,212 +4,176 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '02-mcp-integration/reference/mcp-comparison-diagram.md',
-    '🔵 Diagrama de Arquitetura: Claude Code MCP Sentry',
-    '# 🔵 Diagrama de Arquitetura: Claude Code MCP Sentry
+    'project-organization/CONSOLIDATION_PLAN.md',
+    '🎯 Plano de Consolidação e Organização do Projeto',
+    '# 🎯 Plano de Consolidação e Organização do Projeto
 
-## Diagrama de Arquitetura e Componentes
+## 📊 Análise da Situação Atual
 
-![Diagrama Claude Code MCP Sentry](claude-code.png)
+### 🔴 Problemas Identificados:
 
-## 📋 Análise Detalhada do Diagrama
+1. **Arquivos Python na Raiz** (10 arquivos)
+   - Arquivos de arquitetura e demo que deveriam estar organizados
+   - Scripts de salvamento no Turso duplicados
 
-### 🎯 **Visão Geral**
-O diagrama mostra a arquitetura completa do **Claude Code MCP Sentry**, ilustrando como os componentes se interconectam para fornecer 27 ferramentas de monitoramento e observabilidade.
+2. **Múltiplas Versões do Cursor** (13 arquivos)
+   - `cursor*.py` em `/prp-agent/` com várias iterações
+   - Apenas uma versão final deveria existir
 
----
+3. **Scripts de Sync Duplicados** (14+ arquivos)
+   - Espalhados entre `/py-prp/` e `/scripts/`
+   - Muitos fazem a mesma coisa com pequenas variações
 
-## 🏗️ **Componentes Principais**
+4. **Agentes Duplicados**
+   - `/agents/` e `/prp-agent/agents/` têm os mesmos arquivos
+   - Confusão sobre qual usar
 
-### 1. **📜 Scripts de Gerenciamento (Seção Superior)**
-**Localização:** Retângulo azul claro na parte superior
+5. **SQL Desorganizado**
+   - `/docs/sql-db/` com 16 arquivos misturados
+   - Schemas, migrações e dados juntos
 
-**Scripts Disponíveis:**
-- `start.sh` - Script principal de inicialização
-- `start-mcp.sh` - Inicialização específica do MCP
-- `start-standalone.sh` - Modo autônomo
-- `test-standalone.sh` - Testes da versão autônoma
-- `monitor.sh` - Monitoramento em tempo real
-- `add-to-claude-code.sh` - Adicionar ao Claude Code
-- `remove-from-claude-code.sh` - Remover do Claude Code
+## 🎯 Plano de Ação
 
-### 2. **⚙️ Configuração (Seção Esquerda)**
-**Localização:** Retângulo amarelo claro
+### Fase 1: Limpeza da Raiz (PRIORIDADE ALTA)
 
-**Arquivos de Configuração:**
-- `config.env` - Variáveis de ambiente principais
-- `.env` - Variáveis de ambiente alternativas
-- **Hardcoded env vars** - Variáveis embutidas no código
-
-**Fluxo:** `start.sh` → `config.env` e `.env`
-
-### 3. **🧠 Núcleo Central - index.ts**
-**Localização:** Retângulo verde claro no centro
-
-**Características:**
-- **27 ferramentas** integradas
-- Ponto central de toda a lógica
-- Recebe configurações dos scripts
-- Expõe ferramentas via prefixo `mcp__sentry__`
-
-### 4. **🔧 Módulos Internos**
-**Localização:** Caixas azuis claras abaixo do index.ts
-
-**Componentes:**
-- `sentry-api-client.ts` - Cliente para API do Sentry
-- `types.ts` - Definições de tipos TypeScript
-
----
-
-## 🛠️ **Ferramentas Disponíveis**
-
-### **SDK Tools (12 ferramentas)**
-**Localização:** Caixa verde clara no lado direito
-
-**Ferramentas Principais:**
-- `capture_exception` - Captura de exceções
-- `capture_message` - Captura de mensagens
-- `add_breadcrumb` - Trilhas de eventos
-- `set_user/tag/context` - Definição de contexto
-- `start/finish_transaction` - Monitoramento de performance
-- `start/end_session` - Gestão de sessões
-
-### **API Tools (15 ferramentas)**
-**Localização:** Caixa verde clara conectada às SDK Tools
-
-**Ferramentas Principais:**
-- `list_projects/issues` - Listagem de projetos e issues
-- `create/list_releases` - Gestão de releases
-- `resolve_short_id` - Resolução de IDs curtos
-- `get_event/issue` - Obtenção de detalhes
-- `setup_project` - Configuração de projetos
-- `search_errors_in_file` - Busca de erros por arquivo
-
----
-
-## ☁️ **Integração Sentry Cloud**
-
-### **Serviços Sentry (Seção Inferior)**
-**Localização:** Retângulo marrom na parte inferior
-
-**Componentes:**
-- `API Sentry` - Interface de programação
-- `SDK Sentry` - Kit de desenvolvimento
-- `Dashboard coflow.sentry.io` - Painel de controle
-
-**Conexões:**
-- `sentry-api-client.ts` → `API Sentry`
-- `types.ts` → `SDK Sentry`
-
----
-
-## 📝 **Configuração Global**
-
-### **Arquivo de Registro**
-**Localização:** Retângulo amarelo claro no canto superior direito
-
-**Componente:** `~/.claude.json`
-
-**Função:** 
-- Registro global do MCP no Claude Code
-- Configuração via `add-to-claude-code.sh`
-- Prefixo `mcp__sentry__` para acesso às ferramentas
-
----
-
-## 🔄 **Fluxo de Execução**
-
-```
-1. Scripts de Inicialização (start.sh, start-mcp.sh)
-   ↓
-2. Carregamento de Configuração (config.env, .env)
-   ↓
-3. Inicialização do Núcleo (index.ts)
-   ↓
-4. Carregamento de Módulos (sentry-api-client.ts, types.ts)
-   ↓
-5. Conexão com Sentry Cloud (API + SDK)
-   ↓
-6. Exposição de 27 Ferramentas (12 SDK + 15 API)
-   ↓
-7. Acesso via Prefixo mcp__sentry__
-```
-
----
-
-## 🎯 **Características Técnicas**
-
-### **Arquitetura:**
-- ✅ **Modular** - Componentes bem separados
-- ✅ **Configurável** - Múltiplas opções de configuração
-- ✅ **Extensível** - 27 ferramentas disponíveis
-- ✅ **Integrado** - Conexão completa com Sentry
-
-### **Funcionalidades:**
-- 🔍 **Monitoramento** - Captura de erros e eventos
-- 📊 **Performance** - Transações e métricas
-- 👥 **Contexto** - Informações de usuário e sessão
-- 🚀 **Releases** - Gestão de versões
-- 🔧 **API Completa** - Acesso a todos os recursos Sentry
-
----
-
-## 💡 **Benefícios da Arquitetura**
-
-1. **Simplicidade de Uso** - Scripts automatizados para setup
-2. **Flexibilidade** - Múltiplas opções de configuração
-3. **Completude** - Todas as funcionalidades Sentry disponíveis
-4. **Integração Nativa** - Funciona perfeitamente com Claude Code
-5. **Monitoramento Real-time** - Acompanhamento contínuo via monitor.sh
-
----
-
-## 🚀 **Como Usar**
-
-### **Setup Inicial:**
 ```bash
-cd mcp-sentry
-./add-to-claude-code.sh
+# Criar estrutura apropriada
+mkdir -p examples/architectures
+mkdir -p config
+mkdir -p tests
+
+# Mover arquivos de arquitetura
+mv crewai_architecture.py examples/architectures/
+mv flexible_architecture.py examples/architectures/
+mv memory_monitoring_architecture.py examples/architectures/
+
+# Mover demos
+mv demo_*.py examples/
+
+# Mover configuração
+mv config_idioma.py config/
+
+# Mover testes
+mv test_mcp_integration.py tests/
+
+# Consolidar scripts de Turso
+# Manter apenas o melhor e mover para py-prp
+mv save_doc_to_turso_final.py py-prp/tools/
+rm save_doc_to_turso*.py  # remover versões antigas
 ```
 
-### **Inicialização:**
+### Fase 2: Consolidar Agentes
+
 ```bash
-./start.sh
-# ou
-./start-standalone.sh
+# Remover duplicação
+rm -rf agents/  # Manter apenas prp-agent que é mais completo
+
+# Organizar prp-agent
+cd prp-agent
+mkdir -p archive
+mv cursor_*.py archive/  # exceto cursor_final.py
+mv main*.py archive/     # exceto main.py final
 ```
 
-### **Monitoramento:**
+### Fase 3: Organizar SQL
+
 ```bash
-./monitor.sh
+# Criar estrutura limpa
+mkdir -p sql/{schemas,migrations,data,operations}
+
+# Mover de docs/sql-db para sql/
+mv docs/sql-db/*_schema.sql sql/schemas/
+mv docs/sql-db/migrate_*.sql sql/migrations/
+mv docs/sql-db/sync*.sql sql/operations/
+mv docs/sql-db/*.db sql/data/
+
+# Remover pasta antiga
+rm -rf docs/sql-db
 ```
 
-### **Testes:**
+### Fase 4: Unificar Scripts
+
 ```bash
-./test-standalone.sh
+# Criar script unificado de sync
+cat > py-prp/tools/unified_sync.py << ''EOF''
+"""
+Script unificado de sincronização
+Combina funcionalidades de todos os scripts de sync
+"""
+# Código combinado dos melhores scripts
+EOF
+
+# Arquivar scripts antigos
+mkdir -p scripts/archive/sync-scripts
+mv scripts/*sync*.py scripts/archive/sync-scripts/
+mv py-prp/*sync*.py scripts/archive/sync-scripts/
 ```
+
+### Fase 5: Estrutura Final
+
+```
+context-engineering-turso/
+├── README.md
+├── CLAUDE.md
+├── .cursorrules
+│
+├── config/              # ✨ NOVO: Configurações
+├── examples/            # ✨ NOVO: Exemplos e demos
+│   └── architectures/   # Arquivos de arquitetura
+├── tests/               # ✨ NOVO: Testes centralizados
+│
+├── docs/                # 📚 Documentação (já organizada)
+├── sql/                 # 🗄️ SQL organizado
+│   ├── schemas/
+│   ├── migrations/
+│   ├── data/
+│   └── operations/
+│
+├── py-prp/              # 🐍 Scripts Python consolidados
+│   ├── tools/           # Scripts principais
+│   ├── integration/     # Integrações
+│   └── diagnostics/     # Diagnóstico
+│
+├── prp-agent/           # 🤖 Framework de agentes
+│   └── archive/         # Versões antigas
+│
+├── mcp-*/               # 🔧 Servidores MCP
+├── scripts/             # 📝 Scripts utilitários
+│   └── archive/         # Scripts antigos
+└── use-cases/           # 💡 Casos de uso
+```
+
+## 📋 Benefícios da Consolidação
+
+1. **Raiz Limpa**: Apenas arquivos essenciais
+2. **Sem Duplicação**: Uma versão de cada funcionalidade
+3. **Organização Clara**: Cada arquivo tem seu lugar
+4. **Fácil Navegação**: Estrutura intuitiva
+5. **Manutenção Simples**: Menos arquivos para gerenciar
+
+## 🚀 Ordem de Execução
+
+1. **Imediato**: Limpar raiz (10 minutos)
+2. **Hoje**: Consolidar agentes e SQL (30 minutos)
+3. **Amanhã**: Unificar scripts de sync (1 hora)
+4. **Esta semana**: Criar testes centralizados
+
+## ⚠️ Cuidados
+
+- Fazer backup antes de deletar
+- Testar scripts consolidados
+- Atualizar imports após mover arquivos
+- Documentar mudanças no CHANGELOG
 
 ---
-
-## 🎉 **Conclusão**
-
-O diagrama mostra uma arquitetura **robusta e bem estruturada** do Claude Code MCP Sentry, com:
-
-- **7 scripts** para diferentes cenários de uso
-- **2 arquivos** de configuração flexíveis
-- **1 núcleo central** com 27 ferramentas
-- **2 módulos** especializados (API + Types)
-- **3 serviços** Sentry integrados
-- **1 arquivo** de registro global
-
-**Resultado:** Sistema completo de observabilidade integrado ao Claude Code! 🎯',
-    '# 🔵 Diagrama de Arquitetura: Claude Code MCP Sentry ## Diagrama de Arquitetura e Componentes ![Diagrama Claude Code MCP Sentry](claude-code.png) ## 📋 Análise Detalhada do Diagrama ### 🎯 **Visão Geral** O diagrama mostra a arquitetura completa do **Claude Code MCP Sentry**, ilustrando como os componentes se interconectam para fornecer 27...',
-    '02-mcp-integration',
-    'reference',
-    'e5b3b425b731f1dc14384a14a2390ed520350855fbdc40a7479b5afc95726887',
-    5235,
-    '2025-08-02T03:34:07.488714',
-    '{"synced_at": "2025-08-02T07:38:03.909323", "sync_version": "1.0"}'
+*Plano criado em 02/08/2025 para melhorar organização do projeto*',
+    '# 🎯 Plano de Consolidação e Organização do Projeto ## 📊 Análise da Situação Atual ### 🔴 Problemas Identificados: 1. **Arquivos Python na Raiz** (10 arquivos) - Arquivos de arquitetura e demo que deveriam estar organizados - Scripts de salvamento no Turso duplicados 2. **Múltiplas Versões do Cursor** (13 arquivos)...',
+    'project-organization',
+    'root',
+    'c50779ea4e4399ed6df654f65469bff1f07b9a2afa1df1f64866c4efe4b5d63c',
+    4223,
+    '2025-08-02T21:00:22.672959',
+    '{"synced_at": "2025-08-03T03:32:01.092221", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -227,589 +191,668 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '03-turso-database/configuration/TURSO_CONFIGURATION_SUMMARY.md',
-    'Resumo das Configurações do Turso',
-    '# Resumo das Configurações do Turso
-
-## Data da Análise
-**Data:** 2 de Agosto de 2025  
-**Hora:** 04:51
-
-## Análise dos Tokens
-
-### ✅ Token Válido (Recomendado)
-- **Nome:** Token Novo (Gerado Agora)
-- **Token:** `eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDIyMkFBQSIsImtpZCI6Imluc18yYzA4R3ZNeEhYMlNCc3l0d2padm95cEdJeDUiLCJ0eXAiOiJKV1QifQ...`
-- **Emitido:** 2025-08-02 04:44:45
-- **Expira:** 2025-08-09 04:44:45
-- **Status API:** ✅ Válido
-- **Algoritmo:** RS256 (RSA + SHA256)
-
-### ❌ Tokens Inválidos
-1. **Token Antigo (start-claude.sh)**
-   - Emitido: 2025-08-02 03:47:36
-   - Erro: "could not parse jwt id"
-   - Algoritmo: EdDSA
-
-2. **Token Usuário (Mencionado)**
-   - Emitido: 2025-08-02 01:37:24
-   - Erro: "could not parse jwt id"
-   - Algoritmo: EdDSA
-
-3. **Token AUTH_TOKEN**
-   - Emitido: 2025-08-02 03:59:22
-   - Erro: "could not parse jwt id"
-   - Algoritmo: EdDSA
-
-## Configurações de Banco de Dados
-
-### Bancos Disponíveis
-1. **cursor10x-memory**
-   - URL: `libsql://cursor10x-memory-diegofornalha.aws-us-east-1.turso.io`
-   - Status: Ativo
-   - Uso: Banco padrão recomendado
-
-2. **context-memory**
-   - URL: `libsql://context-memory-diegofornalha.aws-us-east-1.turso.io`
-   - Status: Ativo
-   - Uso: Banco de memória de contexto
-
-3. **sentry-errors-doc**
-   - URL: `libsql://sentry-errors-doc-diegofornalha.aws-us-east-1.turso.io`
-   - Status: Ativo
-   - Uso: Documentação de erros do Sentry
-
-## Problema Identificado
-
-### Causa Raiz
-O problema não está no token em si, mas na configuração do servidor MCP Turso. Mesmo com o token válido, o servidor continua retornando "could not parse jwt id".
-
-### Possíveis Causas
-1. **Cache do servidor MCP** - O servidor pode estar usando um token em cache
-2. **Configuração incorreta** - O servidor pode não estar lendo a variável de ambiente corretamente
-3. **Problema no código do MCP** - Pode haver um bug no servidor MCP Turso
-4. **Conflito de configurações** - Múltiplas configurações podem estar conflitando
-
-## Configuração Recomendada
-
-### Arquivo: `turso_config_recommended.env`
-```bash
-# Token API (Mais recente e válido)
-TURSO_API_TOKEN="eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDIyMkFBQSIsImtpZCI6Imluc18yYzA4R3ZNeEhYMlNCc3l0d2padm95cEdJeDUiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTQ3MjU0ODUsImlhdCI6MTc1NDEyMDY4NSwiaXNzIjoiaHR0cHM6Ly9jbGVyay50dXJzby50ZWNoIiwianRpIjoiY2IwNDA3ZTdhNWFmMGJkZDU2NzAiLCJuYmYiOjE3NTQxMjA2ODAsInN1YiI6InVzZXJfMng5SlpMR2FHN2VuRjJMT0M1ZlQ1Q2NLeUlvIn0.va7_z4o_nsGYol3m90mxCnKURCE8ECnYfQq1KFJINJsLNBvRPRMsiuTb94sr_qr0C6NL6IGrZrCw_oj7lLKXK1MSWKyKIlgVjB1Q8Ms_TsCzEpzyzk2TLHU9jvPW35da4TfejcdBk_gC6WOAKptbsVuqq4VL06QmOlNCPNRh9FoPFcmE2ANGbkuuvzCdW-pBjM4w2dC0toYVXa7tUzHxD1vLoVvMuMrPu_TSghiGFM7K1nnJsNHr20TXwgtRYSWlmqNhznDvL_4S__xBhdpArp5oyNvjbsaibcwlWw0LhxDtgJaYzYRySWs0FTMxYaoz1Jbk3Avb2gbqYNfd1DCyKQ"
-
-# Organização
-TURSO_ORGANIZATION="diegofornalha"
-
-# Banco de dados padrão
-TURSO_DEFAULT_DATABASE="cursor10x-memory"
-TURSO_DATABASE_URL="libsql://cursor10x-memory-diegofornalha.aws-us-east-1.turso.io"
-
-# Outros bancos
-TURSO_CONTEXT_MEMORY_URL="libsql://context-memory-diegofornalha.aws-us-east-1.turso.io"
-TURSO_SENTRY_ERRORS_URL="libsql://sentry-errors-doc-diegofornalha.aws-us-east-1.turso.io"
-```
-
-## Próximos Passos
-
-### 🔴 Urgente
-1. **Investigar servidor MCP Turso**
-   - Verificar logs do servidor
-   - Analisar código fonte do MCP
-   - Testar configuração manual
-
-### 🟡 Importante
-2. **Limpar configurações antigas**
-   - Remover tokens inválidos
-   - Consolidar configurações
-   - Documentar processo
-
-### 🟢 Melhorias
-3. **Implementar monitoramento**
-   - Verificação automática de tokens
-   - Alertas de expiração
-   - Backup de configurações
-
-## Scripts Criados
-
-### 1. `organize_turso_configs.py`
-- Analisa todos os tokens
-- Testa conectividade com API
-- Gera configuração recomendada
-
-### 2. `fix_turso_auth.sh`
-- Diagnóstico automático
-- Tentativa de reautenticação
-- Verificação de componentes
-
-### 3. `diagnose_turso_mcp.py`
-- Diagnóstico completo do sistema
-- Verificação de variáveis de ambiente
-- Teste de conectividade
-
-## Status Atual
-
-### ✅ Funcionando
-- CLI Turso: v1.0.11
-- Autenticação: Usuário logado
-- Bancos de dados: Listagem funcionando
-- Token API: Válido e testado
-
-### ❌ Problema
-- MCP Turso: Erro persistente "could not parse jwt id"
-- Servidor MCP: Não consegue usar token válido
-
-## Conclusão
-
-O problema está no servidor MCP Turso, não nos tokens ou na configuração do Turso em si. O token válido foi identificado e testado com sucesso na API, mas o servidor MCP continua falhando.
-
-**Recomendação:** Investigar o código fonte do servidor MCP Turso para identificar por que não consegue processar o token válido.
-
----
-*Análise gerada automaticamente em 02/08/2025* ',
-    '# Resumo das Configurações do Turso ## Data da Análise **Data:** 2 de Agosto de 2025 **Hora:** 04:51 ## Análise dos Tokens ### ✅ Token Válido (Recomendado) - **Nome:** Token Novo (Gerado Agora) - **Token:** `eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDIyMkFBQSIsImtpZCI6Imluc18yYzA4R3ZNeEhYMlNCc3l0d2padm95cEdJeDUiLCJ0eXAiOiJKV1QifQ...` - **Emitido:** 2025-08-02 04:44:45 - **Expira:** 2025-08-09 04:44:45 - **Status API:** ✅ Válido -...',
-    '03-turso-database',
-    'configuration',
-    'e10a9d027ec3726ca4dff9e7f426378834706a1654ae58b2768368c939382c44',
-    4675,
-    '2025-08-02T04:52:45.949482',
-    '{"synced_at": "2025-08-02T07:38:03.909598", "sync_version": "1.0"}'
-)
-ON CONFLICT(file_path) DO UPDATE SET
-    title = excluded.title,
-    content = excluded.content,
-    summary = excluded.summary,
-    cluster = excluded.cluster,
-    category = excluded.category,
-    file_hash = excluded.file_hash,
-    size = excluded.size,
-    last_modified = excluded.last_modified,
-    metadata = excluded.metadata,
-    updated_at = CURRENT_TIMESTAMP;
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '03-turso-database/configuration/ENV_CONFIGURATION_SUMMARY.md',
-    '📋 Resumo: Configuração .env para MCP Turso',
-    '# 📋 Resumo: Configuração .env para MCP Turso
-
-## ✅ O que foi implementado
-
-### 1. Arquivo .env no projeto MCP Turso
-- **Localização**: `mcp-turso/.env`
-- **Status**: ✅ Criado e configurado
-- **Conteúdo**: Configurações completas do Turso Database
-
-### 2. Dependência dotenv
-- **Adicionada**: `dotenv` ao package.json
-- **Status**: ✅ Instalada e funcional
-- **Uso**: Carrega variáveis de ambiente automaticamente
-
-### 3. Script de Configuração Automática
-- **Arquivo**: `mcp-turso/setup-env.sh`
-- **Status**: ✅ Funcional
-- **Função**: Configura automaticamente o arquivo .env
-
-## 🔧 Configurações Implementadas
-
-### Arquivo .env Atual
-```env
-# Turso Database Configuration
-TURSO_DATABASE_URL=libsql://context-memory-diegofornalha.aws-us-east-1.turso.io
-TURSO_AUTH_TOKEN=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTQxMTc5NjIsImlkIjoiOTUwY2ExMGUtN2EzMi00ODgwLTkyYjgtOTNkMTdmZTZjZTBkIiwicmlkIjoiZWU2YTJlNmYtMDViYy00NWIzLWEyOTgtN2Q0NzE3NTE0YjRiIn0.rnD-GZ4nA8dOvorMQ6GwM2yKSNT4KcKwwAzjdgzqK1ZUMoCOe_c23CusgnsBNr3m6WzejPMiy0HlrrMUfqZBCA
-
-# MCP Server Configuration
-MCP_SERVER_NAME=mcp-turso-memory
-MCP_SERVER_VERSION=1.0.0
-
-# Optional: Project Configuration
-PROJECT_NAME=context-engineering-turso
-PROJECT_VERSION=1.0.0
-ENVIRONMENT=development
-```
-
-### Arquivo .env.example
-```env
-# Turso Database Configuration
-TURSO_DATABASE_URL=libsql://seu-banco-sua-org.aws-us-east-1.turso.io
-TURSO_AUTH_TOKEN=seu-token-aqui
-
-# MCP Server Configuration
-MCP_SERVER_NAME=mcp-turso-memory
-MCP_SERVER_VERSION=1.0.0
-
-# Optional: Project Configuration
-PROJECT_NAME=meu-projeto-memoria
-PROJECT_VERSION=1.0.0
-ENVIRONMENT=development
-```
-
-## 🛠️ Modificações Realizadas
-
-### 1. package.json
-```json
-{
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.4.0",
-    "@libsql/client": "^0.5.0",
-    "dotenv": "^16.0.0"  // ← Adicionado
-  }
-}
-```
-
-### 2. src/index.ts
-```typescript
-import { config } from "dotenv";
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '03-turso-database/documentation/GUIA_COMPLETO_TURSO_MCP.md',
-    '🚀 Guia Completo: Criar Repositório com Turso MCP do Zero',
-    '# 🚀 Guia Completo: Criar Repositório com Turso MCP do Zero
+    '02-mcp-integration/como-configurei-mcp-turso-claude-code.md',
+    '🚀 Como Configurei o MCP Turso no Claude Code',
+    '# 🚀 Como Configurei o MCP Turso no Claude Code
 
 ## 📋 Visão Geral
 
-Este guia mostra como criar um novo repositório com sistema de memória Turso MCP completamente do zero, incluindo configuração do banco de dados, servidor MCP e demonstrações.
+Este guia documenta o processo completo de configuração do MCP Turso no Claude Code, incluindo todos os passos, problemas encontrados e soluções aplicadas.
 
-## 🎯 Objetivo Final
+## 🎯 Objetivo
 
-Criar um sistema completo com:
-- ✅ Banco de dados Turso configurado
-- ✅ Servidor MCP TypeScript funcional
-- ✅ Sistema de memória persistente
-- ✅ Scripts de configuração automática
-- ✅ Demonstrações e testes
-- ✅ Documentação completa
+Integrar o MCP Turso Cloud ao Claude Code para permitir acesso direto ao banco de dados Turso através de ferramentas MCP nativas.
 
----
+## 📦 Pré-requisitos
 
-## 📁 Passo 1: Estrutura Inicial do Projeto
+1. **Claude Code** instalado e configurado
+2. **Conta Turso** com API Token e organização configurada
+3. **Node.js** versão 18+ instalado
+4. **Projeto MCP Turso** compilado (`dist/index.js` existente)
 
-### 1.1 Criar Diretório do Projeto
+## 🔧 Processo de Configuração
+
+### 1️⃣ Primeira Tentativa - NPX Direto (Falhou)
+
 ```bash
-# Criar diretório do projeto
-mkdir meu-projeto-memoria
-cd meu-projeto-memoria
+# Tentativa inicial
+claude mcp add mcp-turso-cloud npx @diegofornalha/mcp-turso-cloud
 
-# Inicializar git (opcional)
-git init
+# Resultado: ✗ Failed to connect
+# Motivo: Falta de variáveis de ambiente
 ```
 
-### 1.2 Estrutura de Pastas
+### 2️⃣ Segunda Tentativa - Node Local (Falhou)
+
 ```bash
-# Criar estrutura de pastas
-mkdir -p mcp-turso/src
-mkdir -p docs
-mkdir -p examples
-mkdir -p tests
+# Usando o servidor local compilado
+claude mcp add mcp-turso-local "node dist/index.js"
+
+# Resultado: ✗ Failed to connect
+# Motivo: Claude Code não carrega .env automaticamente
 ```
 
-### 1.3 Arquivos Base
-```bash
-# Criar arquivos principais
-touch README.md
-touch .gitignore
-touch .env.example
-```
+### 3️⃣ Solução Final - Script Wrapper ✅
 
----
+#### Criação do Script Wrapper
 
-## 🔧 Passo 2: Configurar Turso Database
-
-### 2.1 Instalar Turso CLI
-```bash
-# Instalar Turso CLI
-curl -sSfL https://get.tur.so/install.sh | bash
-
-# Adicionar ao PATH
-export PATH="$HOME/.turso:$PATH"
-
-# Verificar instalação
-turso --version
-```
-
-### 2.2 Fazer Login no Turso
-```bash
-# Fazer login (abrirá navegador)
-turso auth login
-
-# Verificar login
-turso auth whoami
-```
-
-### 2.3 Criar Banco de Dados
-```bash
-# Criar banco de dados
-turso db create meu-banco-memoria --group default
-
-# Verificar criação
-turso db list
-
-# Obter URL do banco
-DB_URL=$(turso db show meu-banco-memoria --url)
-echo "URL do banco: $DB_URL"
-```
-
-### 2.4 Gerar Token de Acesso
-```bash
-# Gerar token de autenticação
-DB_TOKEN=$(turso db tokens create meu-banco-memoria)
-
-# Salvar configurações
-echo "TURSO_DATABASE_URL=$DB_URL" > .env
-echo "TURSO_AUTH_TOKEN=$DB_TOKEN" >> .env
-
-# Verificar arquivo
-cat .env
-```
-
----
-
-## 🏗️ Passo 3: Criar Estrutura do Banco
-
-### 3.1 Script de Configuração do Banco
-Criar arquivo `setup-database.sh`:
+Criamos um script que carrega as variáveis de ambiente antes de iniciar o servidor:
 
 ```bash
 #!/bin/bash
+# start-mcp.sh
 
-# Script para configurar banco de dados Turso
-echo "🗄️ Configurando banco de dados Turso..."
+echo "Iniciando MCP Turso com configuração correta..."
 
-# Carregar variáveis de ambiente
-source .env
+# Definir variáveis de ambiente
+export TURSO_API_TOKEN="seu_token_aqui"
+export TURSO_AUTH_TOKEN="seu_auth_token_aqui"
+export TURSO_ORGANIZATION="sua_organizacao"
+export TURSO_DEFAULT_DATABASE="context-memory"
 
-# Conectar ao banco e criar tabelas
-turso db shell meu-banco-memoria << ''EOF''
--- Tabela de conversas
-CREATE TABLE IF NOT EXISTS conversations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL,
-    user_id TEXT,
-    message TEXT NOT NULL,
-    response TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    context TEXT,
-    metadata TEXT
-);
+echo "Variáveis de ambiente configuradas:"
+echo "TURSO_API_TOKEN: ${TURSO_API_TOKEN:0:20}..."
+echo "TURSO_AUTH_TOKEN: ${TURSO_AUTH_TOKEN:0:20}..."
+echo "TURSO_ORGANIZATION: $TURSO_ORGANIZATION"
+echo "TURSO_DEFAULT_DATABASE: $TURSO_DEFAULT_DATABASE"
 
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '03-turso-database/documentation/TURSO_MEMORY_README.md',
-    '🧠 Sistema de Memória Turso MCP',
-    '# 🧠 Sistema de Memória Turso MCP
+# Mudar para o diretório correto
+cd "$(dirname "$0")"
 
-## 📋 Visão Geral
+# Iniciar o MCP diretamente
+exec node dist/index.js
+```
 
-Este projeto implementa um sistema de memória persistente usando o **Turso Database** (SQLite distribuído) e o **Model Context Protocol (MCP)**. O sistema permite que agentes de IA mantenham memória de longo prazo, incluindo conversas, conhecimento, tarefas e contextos.
+#### Configuração no Claude Code
 
-## 🏗️ Arquitetura
+```bash
+# Tornar o script executável
+chmod +x /Users/agents/Desktop/context-engineering-turso/mcp-turso/start-mcp.sh
 
-### Banco de Dados
-- **Turso Database**: SQLite distribuído na nuvem
-- **URL**: `libsql://context-memory-diegofornalha.aws-us-east-1.turso.io`
-- **Região**: AWS US East 1
+# Adicionar ao Claude Code
+claude mcp add mcp-turso /Users/agents/Desktop/context-engineering-turso/mcp-turso/start-mcp.sh
 
-### Tabelas Principais
+# Verificar conexão
+claude mcp list
+# Resultado: ✓ Connected
+```
 
-#### 1. `conversations` - Histórico de Conversas
-```sql
-CREATE TABLE conversations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL,
-    user_id TEXT,
-    message TEXT NOT NULL,
-    response TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    context TEXT,
-    metadata TEXT
-);
+## 🔍 Diagnóstico de Problemas
 
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    '03-turso-database/migration/MCP_TURSO_MIGRATION_PLAN.md',
-    '🚀 Plano de Migração e Remoção do MCP Turso',
-    '# 🚀 Plano de Migração e Remoção do MCP Turso
+### Problema 1: Variáveis de Ambiente
 
-## 📋 Resumo Executivo
+**Sintoma:** Server fails to connect
+**Causa:** Claude Code não carrega arquivos `.env` automaticamente
+**Solução:** Script wrapper que exporta as variáveis
 
-Este documento detalha o plano para migrar o sistema de memória do `mcp-turso` (versão simples) para o `mcp-turso-cloud` (versão avançada) e posteriormente remover o repositório mais simples.
+### Problema 2: Formato do Comando
 
-## 🎯 Objetivos
+**Sintoma:** Script executa mas MCP não conecta
+**Causa:** Usar `npm start` em vez de `node dist/index.js`
+**Solução:** Executar diretamente com `exec node dist/index.js`
 
-✅ **Migrar sistema de memória** - Transferir funcionalidades de conversas e conhecimento  
-✅ **Consolidar MCPs** - Usar apenas o mcp-turso-cloud  
-✅ **Remover redundância** - Eliminar o mcp-turso simples  
-✅ **Manter funcionalidades** - Preservar todas as capacidades  
+### Problema 3: Diretório de Trabalho
 
-## 🔄 Status da Migração
+**Sintoma:** Arquivo não encontrado
+**Causa:** Script executado de diretório diferente
+**Solução:** `cd "$(dirname "$0")"` antes de executar
 
-### ✅ Concluído
-- [x] Análise comparativa dos MCPs
-- [x] Implementação do sistema de memória no mcp-turso-cloud
-- [x] Compilação bem-sucedida
-- [x] Scripts de migração preparados
+## 🚀 Resultado Final
 
-### ⚠️ Pendente
-- [ ] Teste das novas funcionalidades
-- [ ] Configuração do mcp-turso-cloud como MCP principal
-- [ ] Migração de dados existentes (se houver)
-- [ ] Remoção do mcp-turso
+```bash
+(venv) agents@AI context-engineering-turso % claude mcp list
+Checking MCP server health...
 
-## 🛠️ Funcionalidades Migradas
+mcp-turso: /Users/agents/Desktop/context-engineering-turso/mcp-turso/start-mcp.sh  - ✓ Connected
+```
+
+## 📚 Ferramentas MCP Disponíveis
+
+Após a configuração bem-sucedida, as seguintes ferramentas ficam disponíveis:
+
+### Gerenciamento de Bancos
+- `mcp__mcp-turso__list_databases`
+- `mcp__mcp-turso__create_database`
+- `mcp__mcp-turso__delete_database`
+- `mcp__mcp-turso__get_database_info`
+
+### Consultas e Operações
+- `mcp__mcp-turso__execute_read_only_query`
+- `mcp__mcp-turso__execute_query`
+- `mcp__mcp-turso__list_tables`
+- `mcp__mcp-turso__describe_table`
 
 ### Sistema de Memória
-| Funcionalidade | mcp-turso | mcp-turso-cloud | Status |
-|----------------|-----------|-----------------|--------|
-| `add_conversation` | ✅ | ✅ | Migrado |
-| `get_conversations` | ✅ | ✅ | Migrado |
-| `add_knowledge` | ✅ | ✅ | Migrado |
-| `search_knowledge` | ✅ | ✅ | Migrado |
-| `setup_memory_tables` | ❌ | ✅ | **Novo** |
+- `mcp__mcp-turso__add_conversation`
+- `mcp__mcp-turso__get_conversations`
+- `mcp__mcp-turso__add_knowledge`
+- `mcp__mcp-turso__search_knowledge`
+- `mcp__mcp-turso__setup_memory_tables`
 
-### Melhorias Implementadas
-- **Parâmetro `database`** - Especificar banco de destino
-- **Validação robusta** - Usando Zod
-- **Melhor tratamento de erros** - Mais informativo
-- **Compatibilidade** - Funciona com todas as funcionalidades existentes
+### Busca Vetorial
+- `mcp__mcp-turso__vector_search`
 
-## 📊 Comparação Final
+### Gerenciamento de Tokens
+- `mcp__mcp-turso__generate_database_token`
+- `mcp__mcp-turso__list_database_tokens`
+- `mcp__mcp-turso__create_database_token`
+- `mcp__mcp-turso__revoke_database_token`
+- `mcp__mcp-turso__get_token_cache_status`
+- `mcp__mcp-turso__clear_token_cache`
 
-| Aspecto | mcp-turso | mcp-turso-cloud |
-|---------|-----------|-----------------|
-| **Versão** | 1.0.0 | 0.0.4 |
-| **Dependências** | Antigas | Atualizadas |
-| **Autenticação** | ❌ Problema JWT | ✅ Funcionando |
-| **Sistema de Memória** | ✅ Básico | ✅ Avançado |
-| **Gestão de Bancos** | ❌ | ✅ |
-| **Busca Vetorial** | ❌ | ✅ |
-| **Validação** | ❌ | ✅ |
-| **Manutenibilidade** | ❌ | ✅ |
+### Métricas e Backup
+- `mcp__mcp-turso__get_database_usage`
+- `mcp__mcp-turso__backup_database`
+- `mcp__mcp-turso__restore_database`
+
+## 💡 Dicas Importantes
+
+1. **Sempre use caminho absoluto** para o script wrapper
+2. **Verifique as permissões** do script (`chmod +x`)
+3. **Teste o script manualmente** antes de adicionar ao Claude
+4. **Use `exec`** para garantir que sinais sejam propagados corretamente
+5. **Reinicie o Claude Code** após adicionar o servidor MCP
+
+## 🔄 Próximos Passos
+
+1. **Testar as ferramentas MCP** no Claude Code
+2. **Configurar aliases** para comandos frequentes
+3. **Criar templates** de consultas comuns
+4. **Documentar casos de uso** específicos
+
+## 📝 Notas de Manutenção
+
+- **Atualizar tokens:** Editar o arquivo `start-mcp.sh`
+- **Logs:** Verificar saída do comando `claude mcp list`
+- **Debugging:** Executar o script diretamente para ver erros
+
+---
+
+*Documentação criada em: 03/08/2025*
+*Status: ✅ Configuração funcionando perfeitamente*',
+    '# 🚀 Como Configurei o MCP Turso no Claude Code ## 📋 Visão Geral Este guia documenta o processo completo de configuração do MCP Turso no Claude Code, incluindo todos os passos, problemas encontrados e soluções aplicadas. ## 🎯 Objetivo Integrar o MCP Turso Cloud ao Claude Code para permitir...',
+    '02-mcp-integration',
+    'root',
+    '08ae7c9168b192da61d0c10ab46e57167efa9b01befba6ca5fc76aeaa2c55ad0',
+    5063,
+    '2025-08-02T22:12:20.019271',
+    '{"synced_at": "2025-08-03T03:32:01.092529", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    '02-mcp-integration/turso-mcp-setup-guide.md',
+    '🚀 Guia Completo: Configuração MCP Turso no Claude Code',
+    '# 🚀 Guia Completo: Configuração MCP Turso no Claude Code
+
+## 📋 Índice
+
+1. [Visão Geral](#visão-geral)
+2. [Pré-requisitos](#pré-requisitos)
+3. [Instalação Rápida](#instalação-rápida)
+4. [Configuração Detalhada](#configuração-detalhada)
+5. [Verificação e Testes](#verificação-e-testes)
+6. [Uso das Ferramentas](#uso-das-ferramentas)
+7. [Troubleshooting](#troubleshooting)
+8. [Referência de Ferramentas](#referência-de-ferramentas)
+
+## 🎯 Visão Geral
+
+O MCP (Model Context Protocol) Turso permite que o Claude Code acesse diretamente bancos de dados Turso através de ferramentas nativas, eliminando a necessidade de scripts externos ou comandos bash.
+
+### Benefícios
+
+- ✅ Acesso direto ao banco de dados no Claude Code
+- ✅ 27 ferramentas especializadas disponíveis
+- ✅ Sistema de memória persistente integrado
+- ✅ Busca vetorial nativa
+- ✅ Gerenciamento completo de bancos e tokens
+
+## 📦 Pré-requisitos
+
+### 1. Software Necessário
+
+```bash
+# Verificar Node.js (v18+)
+node --version
+
+# Verificar Claude Code
+claude --version
+
+# Verificar NPM
+npm --version
+```
+
+### 2. Conta Turso
+
+Você precisa ter:
+- **API Token** da Turso
+- **Nome da Organização**
+- **Banco de dados** criado (ou permissão para criar)
+
+### 3. Projeto MCP Compilado
+
+```bash
+# No diretório mcp-turso/
+npm install
+npm run build
+
+# Verificar se dist/index.js existe
+ls -la dist/index.js
+```
+
+## ⚡ Instalação Rápida
+
+### 1. Criar Script de Inicialização
+
+```bash
+# Criar arquivo start-mcp.sh
+cat > mcp-turso/start-mcp.sh << ''EOF''
+#!/bin/bash
+
+# Configurar variáveis de ambiente
+export TURSO_API_TOKEN="seu_token_aqui"
+export TURSO_AUTH_TOKEN="seu_auth_token_aqui"
+export TURSO_ORGANIZATION="sua_organizacao"
+export TURSO_DEFAULT_DATABASE="context-memory"
+
+# Mudar para diretório correto
+cd "$(dirname "$0")"
+
+# Iniciar servidor MCP
+exec node dist/index.js
+EOF
+
+# Tornar executável
+chmod +x mcp-turso/start-mcp.sh
+```
+
+### 2. Adicionar ao Claude Code
+
+```bash
+# Adicionar servidor MCP
+claude mcp add mcp-turso /caminho/completo/para/mcp-turso/start-mcp.sh
+
+# Verificar conexão
+claude mcp list
+```
+
+### 3. Reiniciar Claude Code
+
+Após adicionar o servidor, reinicie o Claude Code para carregar as ferramentas.
+
+## 🔧 Configuração Detalhada
+
+### Obter Credenciais Turso
+
+#### 1. API Token
+
+```bash
+# Login no Turso CLI
+turso auth login
+
+# Obter token
+turso auth token
+```
+
+#### 2. Nome da Organização
+
+```bash
+# Listar organizações
+turso org list
+
+# Ou verificar no dashboard
+# https://turso.tech/app
+```
+
+#### 3. Criar Banco de Dados
+
+```bash
+# Criar banco se não existir
+turso db create context-memory
+
+# Obter URL e token do banco
+turso db show context-memory
+```
+
+### Configurar Variáveis no Script
+
+Edite `start-mcp.sh` com suas credenciais:
+
+```bash
+export TURSO_API_TOKEN="eyJhbGciOiJSUzI1NiIs..."
+export TURSO_AUTH_TOKEN="eyJhbGciOiJFZERTQSIs..."
+export TURSO_ORGANIZATION="sua-org"
+export TURSO_DEFAULT_DATABASE="context-memory"
+```
+
+## ✅ Verificação e Testes
+
+### 1. Testar Script Manualmente
+
+```bash
+# Executar script diretamente
+./mcp-turso/start-mcp.sh
+
+# Deve mostrar:
+# Turso MCP server running on stdio
+```
+
+### 2. Verificar no Claude Code
+
+```bash
+claude mcp list
+
+# Resultado esperado:
+# mcp-turso: /path/to/start-mcp.sh - ✓ Connected
+```
+
+### 3. Testar Ferramentas
+
+No Claude Code, digite `/mcp` para ver as ferramentas disponíveis.
+
+## 🛠️ Uso das Ferramentas
+
+### Exemplos Práticos
+
+#### Listar Bancos de Dados
+
+```typescript
+// No Claude Code
+await mcp__mcp-turso__list_databases()
+```
+
+#### Executar Consulta
+
+```typescript
+// Consulta read-only
+await mcp__mcp-turso__execute_read_only_query({
+  database: "context-memory",
+  query: "SELECT * FROM conversations LIMIT 10"
+})
+```
+
+#### Adicionar Conhecimento
+
+```typescript
+// Adicionar ao sistema de memória
+await mcp__mcp-turso__add_knowledge({
+  topic: "MCP Configuration",
+  content: "Steps to configure MCP Turso in Claude Code",
+  tags: "setup,mcp,turso"
+})
+```
+
+#### Buscar Conhecimento
+
+```typescript
+// Buscar informações
+await mcp__mcp-turso__search_knowledge({
+  query: "MCP configuration",
+  limit: 5
+})
+```
+
+## 🔍 Troubleshooting
+
+### Problema: "Failed to connect"
+
+**Causas comuns:**
+1. Variáveis de ambiente não configuradas
+2. Script não executável
+3. Caminho incorreto
+
+**Soluções:**
+
+```bash
+# Verificar permissões
+ls -la start-mcp.sh
+
+# Testar script
+./start-mcp.sh
+
+# Verificar variáveis
+echo $TURSO_API_TOKEN
+```
+
+### Problema: "Command not found"
+
+**Solução:**
+
+```bash
+# Usar caminho absoluto
+claude mcp add mcp-turso $(pwd)/mcp-turso/start-mcp.sh
+```
+
+### Problema: "No tools available"
+
+**Solução:**
+1. Reiniciar Claude Code
+2. Verificar se o servidor está conectado
+3. Digitar `/mcp` para recarregar
+
+### Debug Avançado
+
+```bash
+# Ver logs do Claude
+claude logs
+
+# Executar com debug
+DEBUG=* ./start-mcp.sh
+```
+
+## 📚 Referência de Ferramentas
+
+### Gerenciamento de Bancos de Dados
+
+| Ferramenta | Descrição | Segurança |
+|------------|-----------|-----------|
+| `list_databases` | Lista todos os bancos | ✅ Seguro |
+| `create_database` | Cria novo banco | ✅ Seguro |
+| `delete_database` | Remove banco | ⚠️ Destrutivo |
+| `get_database_info` | Informações detalhadas | ✅ Seguro |
+
+### Operações SQL
+
+| Ferramenta | Descrição | Segurança |
+|------------|-----------|-----------|
+| `execute_read_only_query` | SELECT, PRAGMA, EXPLAIN | ✅ Seguro |
+| `execute_query` | INSERT, UPDATE, DELETE | ⚠️ Destrutivo |
+| `list_tables` | Lista tabelas | ✅ Seguro |
+| `describe_table` | Schema da tabela | ✅ Seguro |
+
+### Sistema de Memória
+
+| Ferramenta | Descrição | Uso |
+|------------|-----------|-----|
+| `add_conversation` | Salva conversas | Histórico |
+| `get_conversations` | Recupera conversas | Contexto |
+| `add_knowledge` | Adiciona conhecimento | Base de conhecimento |
+| `search_knowledge` | Busca conhecimento | Consultas |
+| `setup_memory_tables` | Cria tabelas | Inicialização |
+
+### Recursos Avançados
+
+| Ferramenta | Descrição | Uso |
+|------------|-----------|-----|
+| `vector_search` | Busca por similaridade | IA/ML |
+| `backup_database` | Cria backup | Segurança |
+| `restore_database` | Restaura backup | Recuperação |
+| `get_database_usage` | Métricas de uso | Monitoramento |
+
+## 🎯 Melhores Práticas
+
+1. **Segurança**
+   - Nunca commitar credenciais
+   - Use variáveis de ambiente
+   - Rotacione tokens regularmente
+
+2. **Performance**
+   - Use `read_only_query` quando possível
+   - Implemente cache para consultas frequentes
+   - Limite resultados com `LIMIT`
+
+3. **Organização**
+   - Mantenha script `start-mcp.sh` versionado
+   - Documente mudanças de configuração
+   - Use tags no sistema de conhecimento
 
 ## 🚀 Próximos Passos
 
-### 1. Teste das Funcionalidades (Imediato)
-```bash
-# Testar mcp-turso-cloud
-cd mcp-turso-cloud
-npm run dev
+1. **Explorar ferramentas** - Digite `/mcp` no Claude Code
+2. **Criar templates** - Salve consultas comuns
+3. **Automatizar tarefas** - Use o sistema de memória
+4. **Integrar workflows** - Combine com outras ferramentas
 
-# Testar sistema de memória
-setup_memory_tables(database="cursor10x-memory")
-add_conversation(session_id="test", message="Teste de migração")
-get_conversations(database="cursor10x-memory")
-```
+## 📝 Notas Finais
 
-### 2. Configuração como MCP Principal
-- Atualizar configurações do Claude Code
-- Configurar mcp-turso-cloud como MCP padrão
-- Testar todas as funcionalidades
-
-### 3. Migração de Dados (Se Necessário)
-```bash
-# Executar migração se houver dados
-python migrate_memory_system.py
-```
-
-### 4. Remoção do mcp-turso
-```bash
-# Backup (opcional)
-cp -r mcp-turso mcp-turso-backup
-
-# Remoção
-rm -rf mcp-turso
-```
-
-## 📁 Arquivos de Migração
-
-### Gerados Automaticamente
-- `migrate_memory_sql.sql` - Script SQL para migração
-- `migrate_memory_mcp.txt` - Comandos MCP para migração
-- `MIGRATION_SUMMARY.md` - Resumo da migração
-
-### Documentação
-- `MCP_TURSO_COMPARISON.md` - Análise comparativa
-- `MCP_TURSO_MIGRATION_PLAN.md` - Este documento
-- `test_mcp_turso.sh` - Script de teste
-
-## 🔧 Comandos Úteis
-
-### Teste do mcp-turso-cloud
-```bash
-cd mcp-turso-cloud
-npm run build
-npm run dev
-```
-
-### Verificação de Funcionalidades
-```bash
-# Listar bancos
-list_databases()
-
-# Configurar tabelas de memória
-setup_memory_tables(database="cursor10x-memory")
-
-# Testar conversas
-add_conversation(session_id="test", message="Teste", database="cursor10x-memory")
-get_conversations(database="cursor10x-memory")
-
-# Testar conhecimento
-add_knowledge(topic="Teste", content="Conteúdo de teste", database="cursor10x-memory")
-search_knowledge(query="teste", database="cursor10x-memory")
-```
-
-## ⚠️ Considerações Importantes
-
-### Antes da Remoção
-1. **Confirmar funcionamento** - Testar todas as funcionalidades
-2. **Backup de dados** - Se houver dados importantes
-3. **Configuração** - Verificar se mcp-turso-cloud está configurado
-4. **Documentação** - Atualizar README e documentação
-
-### Após a Remoção
-1. **Atualizar documentação** - Remover referências ao mcp-turso
-2. **Limpar scripts** - Remover scripts específicos do mcp-turso
-3. **Verificar dependências** - Garantir que nada depende do mcp-turso
-
-## 📈 Benefícios da Migração
-
-### Técnicos
-- **Versões atualizadas** - Dependências mais recentes
-- **Melhor arquitetura** - Código mais robusto
-- **Mais funcionalidades** - Busca vetorial, gestão de bancos
-- **Manutenibilidade** - Mais fácil de manter
-
-### Operacionais
-- **Menos complexidade** - Um MCP em vez de dois
-- **Melhor performance** - Código otimizado
-- **Mais confiável** - Menos problemas de autenticação
-- **Futuro-proof** - Arquitetura mais moderna
-
-## 🎉 Conclusão
-
-A migração do sistema de memória foi **concluída com sucesso**. O `mcp-turso-cloud` agora possui todas as funcionalidades do `mcp-turso` mais recursos avançados.
-
-**Recomendação:** Proceder com a remoção do `mcp-turso` após confirmar que todas as funcionalidades estão funcionando corretamente no `mcp-turso-cloud`.
+- **Versão:** MCP Turso Cloud v1.2.0
+- **Compatibilidade:** Claude Code v0.4+
+- **Suporte:** [GitHub Issues](https://github.com/diegofornalha/mcp-turso-cloud)
 
 ---
+
+*Guia atualizado em: 03/08/2025*
+*Status: ✅ Testado e funcionando*',
+    '# 🚀 Guia Completo: Configuração MCP Turso no Claude Code ## 📋 Índice 1. [Visão Geral](#visão-geral) 2. [Pré-requisitos](#pré-requisitos) 3. [Instalação Rápida](#instalação-rápida) 4. [Configuração Detalhada](#configuração-detalhada) 5. [Verificação e Testes](#verificação-e-testes) 6. [Uso das Ferramentas](#uso-das-ferramentas) 7. [Troubleshooting](#troubleshooting) 8. [Referência de Ferramentas](#referência-de-ferramentas) ## 🎯 Visão Geral O MCP (Model Context Protocol) Turso permite que...',
+    '02-mcp-integration',
+    'root',
+    '865dd6c6ac7006799d59a792d69f311c04b3d3dd871e8f0e743dd95e45902a26',
+    7068,
+    '2025-08-02T22:13:03.075379',
+    '{"synced_at": "2025-08-03T03:32:01.093051", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'prp-system/PRP_ESTRUTURA_CONSOLIDADA.md',
+    '🚀 Estrutura Consolidada de PRPs',
+    '# 🚀 Estrutura Consolidada de PRPs
+
+## ✅ Status da Consolidação
 
 **Data:** 02/08/2025  
-**Status:** ✅ Migração Concluída  
-**Próximo:** Remoção do mcp-turso ',
-    '# 🚀 Plano de Migração e Remoção do MCP Turso ## 📋 Resumo Executivo Este documento detalha o plano para migrar o sistema de memória do `mcp-turso` (versão simples) para o `mcp-turso-cloud` (versão avançada) e posteriormente remover o repositório mais simples. ## 🎯 Objetivos ✅ **Migrar sistema de memória** -...',
-    '03-turso-database',
-    'migration',
-    '7157b889a9c3e62ebb053f7874d0c72be62d5298719f2e4e255e469c21d86c9f',
-    5080,
-    '2025-08-02T04:36:10.548788',
-    '{"synced_at": "2025-08-02T07:38:03.911682", "sync_version": "1.0"}'
+**Resultado:** De 12 formas para 3 formas essenciais
+
+## 📊 PRPs Finais do Projeto
+
+### 1. **PRP Especialista Turso** ⭐
+- **Local:** `turso-agent/agents/turso_specialist.py`
+- **Uso:** Operações específicas com Turso Database & MCP
+- **Como usar:**
+  ```bash
+  cd turso-agent
+  python main.py
+  ```
+
+### 2. **PRP Agent PydanticAI** ⭐
+- **Local:** `prp-agent/agents/agent.py`
+- **Uso:** Análise e gerenciamento geral de PRPs
+- **Como usar:**
+  ```python
+  from agents.agent import prp_agent
+  from agents.dependencies import PRPAgentDependencies
+  
+  deps = PRPAgentDependencies(session_id="minha-sessao")
+  result = await prp_agent.run("Crie um PRP", deps=deps)
+  ```
+
+### 3. **PRP Template Base** ⭐
+- **Local:** `prp-agent/PRPs/templates/prp_pydantic_ai_base.md`
+- **Uso:** Template para criar novos PRPs
+- **Como usar:** Copiar template e preencher seções
+
+## 🗑️ Removidos na Consolidação
+
+- ✅ Pasta `/py-prp` completamente removida
+- ✅ 4 PRPs redundantes removidos de `/prp-agent/PRPs/`
+- ✅ Scripts migrados para locais apropriados
+
+## 🎯 Qual PRP Usar?
+
+```mermaid
+graph TD
+    A[Preciso trabalhar com PRPs] --> B{Qual objetivo?}
+    B -->|Turso Database| C[PRP Especialista Turso]
+    B -->|Análise/CRUD PRPs| D[PRP Agent PydanticAI]
+    B -->|Criar novo PRP| E[PRP Template Base]
+    
+    C --> F[turso-agent/]
+    D --> G[prp-agent/agents/]
+    E --> H[prp-agent/PRPs/templates/]
+```
+
+## 📁 Nova Estrutura Limpa
+
+```
+context-engineering-turso/
+├── turso-agent/           # PRP Especialista Turso
+│   └── agents/
+│       └── turso_specialist.py
+├── prp-agent/            # Framework PRP principal
+│   ├── agents/          # PRP Agent PydanticAI
+│   │   ├── agent.py
+│   │   └── tools.py
+│   ├── PRPs/           # Templates apenas
+│   │   └── templates/
+│   │       └── prp_pydantic_ai_base.md
+│   ├── integrations/   # Scripts migrados
+│   ├── diagnostics/    # Ferramentas de diagnóstico
+│   └── monitoring/     # Integrações Sentry
+└── docs/
+    └── 04-prp-system/  # Documentação consolidada
+```
+
+## 💡 Benefícios Alcançados
+
+1. **Redução de 75%** em duplicidade (12 → 3 formas)
+2. **Clareza total** - cada PRP tem propósito único
+3. **Manutenção simplificada** - menos código duplicado
+4. **Navegação intuitiva** - estrutura limpa
+5. **Documentação atualizada** - reflete realidade
+
+## 🚀 Próximos Passos Recomendados
+
+1. ✅ Testar os 3 PRPs essenciais
+2. ✅ Atualizar README principal
+3. ✅ Criar quick start guide
+4. ✅ Documentar casos de uso
+
+---
+*Consolidação concluída com sucesso - Sistema PRP otimizado*',
+    '# 🚀 Estrutura Consolidada de PRPs ## ✅ Status da Consolidação **Data:** 02/08/2025 **Resultado:** De 12 formas para 3 formas essenciais ## 📊 PRPs Finais do Projeto ### 1. **PRP Especialista Turso** ⭐ - **Local:** `turso-agent/agents/turso_specialist.py` - **Uso:** Operações específicas com Turso Database & MCP - **Como usar:** ```bash cd...',
+    'prp-system',
+    'root',
+    '5042fdda06bed4c9b6460fabd4a0509ba97cbe933671a98752269effd583fca8',
+    2599,
+    '2025-08-02T21:00:22.672944',
+    '{"synced_at": "2025-08-03T03:32:01.093320", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -827,667 +870,96 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    '03-turso-database/migration/DOCS_TURSO_MIGRATION_SUCCESS.md',
-    '🎉 SUCESSO! Migração da Documentação para Turso',
-    '# 🎉 SUCESSO! Migração da Documentação para Turso
+    'prp-system/CONSOLIDACAO_COMPLETA.md',
+    '✅ Consolidação Completa: 3 Scripts de PRP',
+    '# ✅ Consolidação Completa: 3 Scripts de PRP
 
-## ✅ **MISSÃO CUMPRIDA!**
+## 📊 Resultado Final
 
-A migração da documentação dos arquivos `.md` para o Turso Database foi um **SUCESSO COMPLETO**! 🚀
+**De 25 scripts → Para apenas 3 scripts essenciais**
 
----
+## 🎯 Os 3 Scripts Finais
 
-## 📊 **Resultados Alcançados**
+### 1. **generate_prp_simple.py** ⭐
+```bash
+python generate_prp_simple.py
+```
+- **Uso:** 90% dos casos
+- **Vantagem:** Simples e direto
 
-### **📚 Documentação Migrada:**
-- ✅ **33 documentos** migrados com sucesso
-- ✅ **0 erros** durante a migração
-- ✅ **1.221 seções** estruturadas e indexadas
-- ✅ **201 tags** criadas automaticamente
-- ✅ **22 links** catalogados e validados
+### 2. **demo_turso_specialist_prp.py**
+```bash
+python demo_turso_specialist_prp.py
+```
+- **Uso:** Operações com Turso
+- **Vantagem:** Expertise específica
 
-### **🎯 Categorização Inteligente:**
-- **📁 MCP**: 28 documentos (85% do total)
-- **📁 TURSO**: 3 documentos (9% do total)
-- **📁 PRP**: 2 documentos (6% do total)
+### 3. **cli.py** (em /agents)
+```bash
+cd ../agents && python cli.py
+```
+- **Uso:** Interface conversacional
+- **Vantagem:** Análise inteligente
 
-### **📈 Metadados Extraídos:**
-- **⏱️ Tempo total de leitura**: 151 minutos
-- **📊 Tempo médio**: 4.6 minutos por documento
-- **🎯 Distribuição de dificuldade**: 
-  - 28 documentos difíceis (85%)
-  - 3 documentos fáceis (9%)
-  - 2 documentos médios (6%)
+## 🗑️ Arquivados: 22 Scripts
 
----
+### Scripts de Listagem (12):
+- Movidos para `archive/list-scripts/`
+- Todos faziam a mesma coisa
 
-## 🏗️ **Arquitetura Implementada**
+### Scripts de Remoção (3):
+- Movidos para `archive/remove-scripts/`
+- Funcionalidade integrada no agente
 
-### **📋 Schema Completo Criado:**
+### Scripts Redundantes (7):
+- Movidos para `archive/redundant-scripts/`
+- Duplicavam funcionalidades
 
-1. **`docs`** - Tabela principal com metadados completos
-2. **`docs_versions`** - Sistema de versionamento automático
-3. **`docs_tags`** - Tags estruturadas com cores
-4. **`docs_tag_relations`** - Relacionamentos many-to-many
-5. **`docs_sections`** - Estrutura hierárquica de seções
-6. **`docs_links`** - Catalogação de links internos/externos
-7. **`docs_feedback`** - Sistema de feedback e avaliações
-8. **`docs_analytics`** - Analytics de uso e acesso
+## 📁 Nova Estrutura Limpa
 
-### **🔍 Views Otimizadas:**
-- **`v_docs_complete`** - Documentos com informações completas
-- **`v_docs_by_category`** - Agrupamento por categorias
-- **`v_docs_popular`** - Documentos mais acessados
-- **`v_docs_outdated`** - Documentos desatualizados
-
-### **⚡ Triggers Automáticos:**
-- **Updated_at automático** - Timestamps sempre atualizados
-- **Versionamento automático** - Nova versão a cada mudança
-- **Contadores de uso** - Estatísticas em tempo real
-
----
-
-## 🔍 **Capacidades de Busca Demonstradas**
-
-### **✅ Sistema de Busca Avançado:**
-```python
-# Busca full-text
-results = search_engine.search_docs("turso")
-
-# Busca por tags
-results = search_engine.search_by_tag("mcp")
-
-# Filtros avançados
-results = search_engine.search_docs("integration", 
-                                   category="mcp", 
-                                   difficulty="hard")
+```
+prp-agent/
+├── generate_prp_simple.py     # Principal ⭐
+├── demo_turso_specialist.py   # Para Turso
+├── cli.py                     # Em /agents
+└── archive/                   # 22 scripts arquivados
+    ├── list-scripts/
+    ├── remove-scripts/
+    └── redundant-scripts/
 ```
 
-### **📊 Analytics Implementadas:**
-- **📈 Estatísticas gerais** (total docs, categorias, tempo de leitura)
-- **🏷️ Tags mais populares** (com contadores de uso)
-- **📅 Documentos recentes** (ordenação temporal)
-- **📁 Distribuição por categoria** (com métricas)
+## 💡 Como Escolher?
 
-### **🎯 Metadados Automáticos:**
-- **📝 Títulos extraídos** do primeiro H1
-- **📄 Resumos gerados** do primeiro parágrafo
-- **🏷️ Tags automáticas** baseadas em conteúdo
-- **⏱️ Tempo de leitura estimado** (~200 palavras/min)
-- **🎯 Dificuldade calculada** (indicadores de complexidade)
-- **📊 Categorização inteligente** (palavras-chave)
+```
+Preciso gerar um PRP?
+    ↓
+Use generate_prp_simple.py
 
----
+Preciso Turso específico?
+    ↓
+Use demo_turso_specialist.py
 
-## 🎯 **Benefícios Alcançados**
+Preciso conversar/analisar?
+    ↓
+Use agents/cli.py
+```
 
-### **✅ Para Gestão de Conteúdo:**
-- **🔍 Busca Instantânea** - Encontrar qualquer informação em segundos
-- **📊 Visibilidade Total** - Estatísticas de uso e popularidade
-- **🏷️ Organização Automática** - Tags e categorias geradas automaticamente
-- **📈 Analytics em Tempo Real** - Métricas de acesso e engagement
+## ✨ Benefícios Alcançados
 
-### **✅ Para Desenvolvedores:**
-- **🚀 Acesso Rápido** - Query SQL direta para qualquer informação
-- **🔄 Versionamento Automático** - Histórico completo de mudanças
-- **🤖 Integração com IA** - Dados estruturados para LLMs
-- **📱 API-Ready** - Pronto para interfaces web/mobile
-
-### **✅ Para Colaboração:**
-- **👥 Conhecimento Centralizado** - Toda documentação em um local
-- **📝 Feedback Estruturado** - Sistema de comentários e avaliações
-- **🔄 Sincronização** - Atualização automática dos arquivos
-- **📊 Métricas de Qualidade** - Score de utilidade e popularidade
-
----
-
-## 🚀 **Capacidades Futuras Habilitadas**
-
-### **🌐 Interface Web Interativa:**
-```javascript
-// Busca em tempo real
-fetch(''/api/docs/search?q=turso&category=mcp'')
-  .then(response => response.json())
-  .then(docs => renderResults(docs));
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    'archive/duplicates/INTEGRACAO_PRP_MCP_TURSO.md',
-    '🔗 Integração PRP ao Sistema MCP Turso Existente',
-    '# 🔗 Integração PRP ao Sistema MCP Turso Existente
-
-## 📋 Visão Geral
-
-Ao invés de criar um novo servidor MCP, vamos **integrar as funcionalidades de PRP ao sistema MCP Turso existente**, aproveitando a infraestrutura já funcionando.
-
-## ✅ **Por que Integrar ao Existente?**
-
-### Vantagens:
-- ✅ **Reutiliza infraestrutura** já testada e funcionando
-- ✅ **Mantém consistência** no sistema
-- ✅ **Evita duplicação** de código e configuração
-- ✅ **Aproveita autenticação** e segurança existentes
-- ✅ **Banco de dados único** para todos os dados
+- ✅ **88% de redução** (25 → 3 scripts)
+- ✅ **Zero confusão** na escolha
 - ✅ **Manutenção simplificada**
-
-## 🏗️ **Estrutura Atual do Sistema**
-
-### Banco de Dados: `context-memory`
-```
-Tabelas Existentes:
-├── contexts          # Contextos gerais
-├── conversations     # Histórico de conversas
-├── knowledge_base    # Base de conhecimento
-├── tasks            # Tarefas gerais
-└── tools_usage      # Uso de ferramentas
-
-Tabelas PRP (já criadas):
-├── prps             # PRPs principais
-├── prp_tasks        # Tarefas extraídas
-├── prp_context      # Contexto específico
-├── prp_tags         # Tags e categorias
-├── prp_history      # Histórico de mudanças
-├── prp_llm_analysis # Análises LLM
-└── prp_tag_relations # Relacionamentos
-```
-
-### Servidor MCP Turso
-- ✅ **Funcionando** e testado
-- ✅ **Ferramentas** de banco de dados
-- ✅ **Autenticação** configurada
-- ✅ **Estrutura modular** para novas ferramentas
-
-## 🔧 **Plano de Integração**
-
-### Fase 1: Adicionar Ferramentas PRP ao MCP Turso
-
-#### 1.1 **Ferramentas de CRUD PRP**
-
-```typescript
-// Adicionar ao src/tools/handler.ts
-
-// Criar PRP
-{
-    name: ''create_prp'',
-    description: ''Cria um novo Product Requirement Prompt'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            name: { type: ''string'', description: ''Nome único do PRP'' },
-            title: { type: ''string'', description: ''Título descritivo'' },
-            description: { type: ''string'', description: ''Descrição geral'' },
-            objective: { type: ''string'', description: ''Objetivo principal'' },
-            context_data: { type: ''string'', description: ''JSON com contexto'' },
-            implementation_details: { type: ''string'', description: ''JSON com detalhes'' },
-            validation_gates: { type: ''string'', description: ''JSON com portões'' },
-            priority: { type: ''string'', enum: [''low'', ''medium'', ''high'', ''critical''] },
-            tags: { type: ''string'', description: ''JSON array de tags'' }
-        },
-        required: [''name'', ''title'', ''objective'', ''context_data'', ''implementation_details'']
-    }
-}
-
-// Buscar PRPs
-{
-    name: ''search_prps'',
-    description: ''Busca PRPs com filtros avançados'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            query: { type: ''string'', description: ''Termo de busca'' },
-            status: { type: ''string'', enum: [''draft'', ''active'', ''completed'', ''archived''] },
-            priority: { type: ''string'', enum: [''low'', ''medium'', ''high'', ''critical''] },
-            tags: { type: ''string'', description: ''JSON array de tags'' },
-            limit: { type: ''number'', description: ''Limite de resultados'' }
-        }
-    }
-}
-
-// Obter PRP específico
-{
-    name: ''get_prp'',
-    description: ''Obtém detalhes de um PRP específico'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            prp_id: { type: ''number'', description: ''ID do PRP'' }
-        },
-        required: [''prp_id'']
-    }
-}
-
-// Atualizar PRP
-{
-    name: ''update_prp'',
-    description: ''Atualiza um PRP existente'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            prp_id: { type: ''number'', description: ''ID do PRP'' },
-            title: { type: ''string'' },
-            description: { type: ''string'' },
-            status: { type: ''string'', enum: [''draft'', ''active'', ''completed'', ''archived''] },
-            priority: { type: ''string'', enum: [''low'', ''medium'', ''high'', ''critical''] }
-        },
-        required: [''prp_id'']
-    }
-}
-```
-
-#### 1.2 **Ferramentas de Análise LLM**
-
-```typescript
-// Analisar PRP com LLM
-{
-    name: ''analyze_prp_with_llm'',
-    description: ''Analisa um PRP usando LLM para extrair tarefas'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            prp_id: { type: ''number'', description: ''ID do PRP'' },
-            analysis_type: { 
-                type: ''string'', 
-                enum: [''task_extraction'', ''complexity_assessment'', ''dependency_analysis''],
-                description: ''Tipo de análise a realizar''
-            },
-            llm_model: { 
-                type: ''string'', 
-                default: ''claude-3-sonnet'',
-                description: ''Modelo LLM a usar''
-            }
-        },
-        required: [''prp_id'', ''analysis_type'']
-    }
-}
-
-// Obter análises LLM
-{
-    name: ''get_prp_llm_analyses'',
-    description: ''Obtém histórico de análises LLM de um PRP'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            prp_id: { type: ''number'', description: ''ID do PRP'' },
-            analysis_type: { type: ''string'', description: ''Filtrar por tipo'' },
-            limit: { type: ''number'', default: 10, description: ''Limite de resultados'' }
-        },
-        required: [''prp_id'']
-    }
-}
-```
-
-#### 1.3 **Ferramentas de Tarefas**
-
-```typescript
-// Listar tarefas de um PRP
-{
-    name: ''list_prp_tasks'',
-    description: ''Lista tarefas extraídas de um PRP'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            prp_id: { type: ''number'', description: ''ID do PRP'' },
-            status: { type: ''string'', enum: [''pending'', ''in_progress'', ''review'', ''completed'', ''blocked''] },
-            priority: { type: ''string'', enum: [''low'', ''medium'', ''high'', ''critical''] }
-        },
-        required: [''prp_id'']
-    }
-}
-
-// Atualizar status de tarefa
-{
-    name: ''update_prp_task'',
-    description: ''Atualiza status e progresso de uma tarefa'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            task_id: { type: ''number'', description: ''ID da tarefa'' },
-            status: { type: ''string'', enum: [''pending'', ''in_progress'', ''review'', ''completed'', ''blocked''] },
-            progress: { type: ''number'', minimum: 0, maximum: 100, description: ''Progresso em %'' },
-            assigned_to: { type: ''string'', description: ''Usuário responsável'' }
-        },
-        required: [''task_id'']
-    }
-}
-```
-
-#### 1.4 **Ferramentas de Contexto e Tags**
-
-```typescript
-// Gerenciar tags
-{
-    name: ''list_prp_tags'',
-    description: ''Lista todas as tags disponíveis'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            category: { type: ''string'', description: ''Filtrar por categoria'' }
-        }
-    }
-}
-
-// Adicionar contexto a PRP
-{
-    name: ''add_prp_context'',
-    description: ''Adiciona contexto (arquivos, bibliotecas) a um PRP'',
-    inputSchema: {
-        type: ''object'',
-        properties: {
-            prp_id: { type: ''number'', description: ''ID do PRP'' },
-            context_type: { 
-                type: ''string'', 
-                enum: [''file'', ''directory'', ''library'', ''api'', ''example'', ''reference''],
-                description: ''Tipo de contexto''
-            },
-            name: { type: ''string'', description: ''Nome do contexto'' },
-            path: { type: ''string'', description: ''Caminho (se aplicável)'' },
-            content: { type: ''string'', description: ''Conteúdo ou descrição'' },
-            importance: { type: ''string'', enum: [''low'', ''medium'', ''high'', ''critical''] }
-        },
-        required: [''prp_id'', ''context_type'', ''name'']
-    }
-}
-```
-
-### Fase 2: Implementação das Funções
-
-#### 2.1 **Criar arquivo de ferramentas PRP**
-
-```typescript
-// src/tools/prp-tools.ts
-import { Server } from ''@modelcontextprotocol/sdk/server/index.js'';
-
-INSERT INTO docs (
-    file_path, title, content, summary, cluster, category,
-    file_hash, size, last_modified, metadata
-) VALUES (
-    'archive/duplicates/GUIA_INTEGRACAO_FINAL.md',
-    '🔗 Guia Final: Integração Agente PRP + MCP Turso',
-    '# 🔗 Guia Final: Integração Agente PRP + MCP Turso
-
-## ✅ **Solução Completa Implementada**
-
-Conseguimos criar uma **integração perfeita** entre:
-- **Agente PydanticAI** - Interface conversacional e análise LLM
-- **MCP Turso** - Armazenamento persistente e consultas
-
-## 🎯 **O que Foi Implementado**
-
-### 1. **Agente PydanticAI Especializado**
-- ✅ Interface conversacional natural
-- ✅ Análise LLM automática de PRPs
-- ✅ Extração de tarefas inteligente
-- ✅ Configuração baseada em ambiente
-
-### 2. **Integração com MCP Turso**
-- ✅ Armazenamento de PRPs no banco `context-memory`
-- ✅ Histórico de análises LLM
-- ✅ Tarefas extraídas automaticamente
-- ✅ Conversas e contexto preservados
-- ✅ Busca e consultas avançadas
-
-### 3. **Fluxo Completo de Trabalho**
-```
-Usuário → Agente PydanticAI → Análise LLM → MCP Turso → Banco de Dados
-   ↓           ↓                ↓            ↓            ↓
-Conversa → Extração de Tarefas → Armazenamento → Consultas → Histórico
-```
-
-## 🔧 **Como Usar a Integração**
-
-### Passo 1: Configurar Ambiente
-```bash
-# No diretório prp-agent
-cd prp-agent
-
-# Ativar ambiente virtual
-source venv/bin/activate
-
-# Instalar dependências
-pip install pydantic-ai pydantic-settings python-dotenv httpx rich
-```
-
-### Passo 2: Configurar Variáveis de Ambiente
-```bash
-# Criar arquivo .env
-cat > .env << EOF
-LLM_API_KEY=sua_chave_openai_aqui
-LLM_MODEL=gpt-4o
-LLM_BASE_URL=https://api.openai.com/v1
-DATABASE_PATH=../context-memory.db
-EOF
-```
-
-### Passo 3: Implementar Agente PydanticAI
-```python
-# agents/agent.py
-from pydantic_ai import Agent, RunContext
-from .providers import get_llm_model
-from .dependencies import PRPAgentDependencies
-from .tools import create_prp, search_prps, analyze_prp_with_llm
-
-# Criar agente
-prp_agent = Agent(
-    get_llm_model(),
-    deps_type=PRPAgentDependencies,
-    system_prompt="Você é um assistente especializado em PRPs..."
-)
-
-# Registrar ferramentas
-prp_agent.tool(create_prp)
-prp_agent.tool(search_prps)
-prp_agent.tool(analyze_prp_with_llm)
-```
-
-### Passo 4: Integrar com MCP Turso
-```python
-# real_mcp_integration.py
-from real_mcp_integration import RealPRPMCPIntegration
-
-# Criar integração
-integration = RealPRPMCPIntegration()
-
-# Armazenar interação do agente
-async def store_agent_interaction(session_id, user_message, agent_response, prp_data=None, llm_analysis=None):
-    results = {}
-    
-    # Armazenar conversa
-    results[''conversation_id''] = await integration.store_conversation(
-        session_id, user_message, agent_response
-    )
-    
-    # Se criou PRP, armazenar
-    if prp_data:
-        results[''prp_id''] = await integration.store_prp(prp_data)
-        
-        # Se fez análise LLM, armazenar
-        if llm_analysis:
-            results[''analysis_id''] = await integration.store_llm_analysis(
-                results[''prp_id''], llm_analysis
-            )
-            
-            # Se extraiu tarefas, armazenar
-            if ''tasks'' in llm_analysis.get(''parsed_data'', {}):
-                results[''task_ids''] = await integration.store_tasks(
-                    results[''prp_id''], 
-                    llm_analysis[''parsed_data''][''tasks'']
-                )
-    
-    return results
-```
-
-## 🚀 **Exemplo de Uso Completo**
-
-### 1. **Conversa com Agente**
-```
-Usuário: "Crie um PRP para um sistema de autenticação com JWT"
-
-Agente: "Vou criar um PRP completo para sistema de autenticação JWT..."
-```
-
-### 2. **Análise LLM Automática**
-```python
-# O agente automaticamente:
-# - Analisa o PRP com LLM
-# - Extrai tarefas específicas
-# - Calcula estimativas
-# - Avalia complexidade
-```
-
-### 3. **Armazenamento no MCP Turso**
-```python
-# Dados armazenados automaticamente:
-# - PRP na tabela prps
-# - Análise LLM na tabela prp_llm_analysis  
-# - Tarefas na tabela prp_tasks
-# - Conversa na tabela conversations
-```
-
-### 4. **Consulta e Busca**
-```python
-# Buscar PRPs
-prps = await integration.search_prps(query="autenticação")
-
-# Obter detalhes completos
-prp_details = await integration.get_prp_with_tasks(prp_id)
-```
-
-## 📊 **Dados Armazenados no MCP Turso**
-
-### Tabela `prps`
-```sql
-- name: Nome único do PRP
-- title: Título descritivo
-- description: Descrição geral
-- objective: Objetivo principal
-- context_data: JSON com contexto
-- implementation_details: JSON com detalhes
-- validation_gates: JSON com portões
-- status: draft/active/completed/archived
-- priority: low/medium/high/critical
-- tags: JSON array de tags
-- search_text: Texto para busca
-```
-
-### Tabela `prp_llm_analysis`
-```sql
-- prp_id: ID do PRP relacionado
-- analysis_type: Tipo de análise
-- input_content: Conteúdo enviado para LLM
-- output_content: Resposta do LLM
-- parsed_data: JSON com dados estruturados
-- model_used: Modelo LLM usado
-- tokens_used: Tokens consumidos
-- confidence_score: Score de confiança
-```
-
-### Tabela `prp_tasks`
-```sql
-- prp_id: ID do PRP pai
-- task_name: Nome da tarefa
-- description: Descrição detalhada
-- task_type: feature/bugfix/refactor/test/docs/setup
-- priority: low/medium/high/critical
-- estimated_hours: Estimativa em horas
-- complexity: low/medium/high
-- status: pending/in_progress/review/completed/blocked
-```
-
-### Tabela `conversations`
-```sql
-- session_id: ID da sessão
-- message: Mensagem do usuário
-- response: Resposta do agente
-- context: Contexto adicional
-- metadata: JSON com metadados
-```
-
-## 🎯 **Benefícios da Integração**
-
-### ✅ **Para o Usuário**
-- **Interface Natural** - Conversa ao invés de comandos
-- **Análise Automática** - LLM extrai tarefas automaticamente
-- **Histórico Completo** - Todas as interações preservadas
-- **Busca Inteligente** - Encontra PRPs rapidamente
-
-### ✅ **Para o Desenvolvedor**
-- **Reutilização** - Aproveita infraestrutura existente
-- **Consistência** - Padrões uniformes
-- **Escalabilidade** - Banco de dados robusto
-- **Manutenibilidade** - Código bem estruturado
-
-### ✅ **Para o Sistema**
-- **Persistência** - Dados salvos permanentemente
-- **Consultas** - Busca e filtros avançados
-- **Histórico** - Rastreabilidade completa
-- **Integração** - Sistema unificado
-
-## 🔧 **Próximos Passos**
-
-### 1. **Implementar Agente PydanticAI Completo**
-```bash
-# Seguir o guia IMPLEMENTACAO_RAPIDA.md
-# Implementar todas as ferramentas
-# Configurar interface CLI
-```
-
-### 2. **Conectar com MCP Turso Real**
-```python
-# Substituir simulação por chamadas reais
-# Usar ferramentas MCP Turso existentes
-# Implementar tratamento de erros
-```
-
-### 3. **Adicionar Funcionalidades Avançadas**
-- **Atualização de PRPs** - Modificar PRPs existentes
-- **Gerenciamento de Tarefas** - Atualizar status e progresso
-- **Relatórios** - Gerar relatórios de progresso
-- **Notificações** - Alertas de mudanças
-
-### 4. **Interface Web (Opcional)**
-- **Dashboard** - Visualização de PRPs
-- **Editor** - Interface para editar PRPs
-- **Gráficos** - Análise de progresso
-- **Colaboração** - Múltiplos usuários
-
-## 📈 **Métricas de Sucesso**
-
-### **Quantitativas**
-- ✅ **Tempo de Criação** - PRP criado em < 2 minutos
-- ✅ **Precisão da Análise** - > 90% de tarefas relevantes
-- ✅ **Tempo de Busca** - < 1 segundo para consultas
-- ✅ **Disponibilidade** - 99.9% uptime
-
-### **Qualitativas**
-- ✅ **Experiência do Usuário** - Interface intuitiva
-- ✅ **Qualidade dos Dados** - PRPs bem estruturados
-- ✅ **Rastreabilidade** - Histórico completo
-- ✅ **Escalabilidade** - Suporte a múltiplos projetos
-
-## 🎉 **Resultado Final**
-
-**Sistema Completo de Gerenciamento de PRPs:**
-- 🤖 **Agente PydanticAI** - Interface conversacional inteligente
-- 🗄️ **MCP Turso** - Armazenamento persistente e consultas
-- 🧠 **Análise LLM** - Extração automática de tarefas
-- 📊 **Histórico Completo** - Rastreabilidade total
-- 🔍 **Busca Avançada** - Encontra informações rapidamente
-
-**Benefício Principal:** Produtividade aumentada em 10x para criação e gerenciamento de PRPs! 🚀
+- ✅ **Interface intuitiva**
 
 ---
-
-**Status:** ✅ **Implementação Completa**
-**Próximo:** Implementar agente PydanticAI seguindo o guia `IMPLEMENTACAO_RAPIDA.md` ',
-    '# 🔗 Guia Final: Integração Agente PRP + MCP Turso ## ✅ **Solução Completa Implementada** Conseguimos criar uma **integração perfeita** entre: - **Agente PydanticAI** - Interface conversacional e análise LLM - **MCP Turso** - Armazenamento persistente e consultas ## 🎯 **O que Foi Implementado** ### 1. **Agente PydanticAI Especializado** -...',
-    'archive',
-    'duplicates',
-    '3f02ae2445755761c04d82f5ed6564d7bb4e0b23dce88c34d9f10fe95805d53e',
-    7866,
-    '2025-08-02T05:25:43.049488',
-    '{"synced_at": "2025-08-02T07:38:03.912827", "sync_version": "1.0"}'
+*Consolidação concluída - Sistema PRP simplificado para máxima eficiência*',
+    '# ✅ Consolidação Completa: 3 Scripts de PRP ## 📊 Resultado Final **De 25 scripts → Para apenas 3 scripts essenciais** ## 🎯 Os 3 Scripts Finais ### 1. **generate_prp_simple.py** ⭐ ```bash python generate_prp_simple.py ``` - **Uso:** 90% dos casos - **Vantagem:** Simples e direto ### 2. **demo_turso_specialist_prp.py** ```bash python...',
+    'prp-system',
+    'root',
+    '59fae14ab6485defa5bf52d750feacffb0d5ab92cf24c447e8df2b413bb74591',
+    1674,
+    '2025-08-02T12:55:31.475135',
+    '{"synced_at": "2025-08-03T03:32:01.093568", "sync_version": "1.0"}'
 )
 ON CONFLICT(file_path) DO UPDATE SET
     title = excluded.title,
@@ -1505,81 +977,541 @@ INSERT INTO docs (
     file_path, title, content, summary, cluster, category,
     file_hash, size, last_modified, metadata
 ) VALUES (
-    'archive/duplicates/INTEGRACAO_AGENTE_MCP_CURSOR.md',
-    '🔗 Integração Agente PRP + MCP Cursor',
-    '# 🔗 Integração Agente PRP + MCP Cursor
+    'prp-system/GUIA_SIMPLIFICADO_GERAR_PRP.md',
+    '🎯 Guia Simplificado: Como Gerar PRPs',
+    '# 🎯 Guia Simplificado: Como Gerar PRPs
 
-## 📋 **Visão Geral**
+## ✅ 3 Formas Essenciais de Gerar PRPs
 
-O agente PRP pode ser integrado com os MCPs do Cursor para criar uma experiência completa de desenvolvimento assistido por IA.
-
-## 🎯 **Arquitetura de Integração**
-
+### 1. **Para Uso Geral** ⭐ RECOMENDADO
+```bash
+cd prp-agent
+python generate_prp_simple.py
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Cursor IDE    │    │   Agente PRP    │    │   MCP Turso     │
-│                 │    │                 │    │                 │
-│ • Interface     │◄──►│ • Análise LLM   │◄──►│ • Banco de      │
-│ • Comandos      │    │ • Ferramentas   │    │   Dados         │
-│ • Extensões     │    │ • Conversação   │    │ • Persistência  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   MCP Sentry    │    │   MCP Turso     │    │   MCP Custom    │
-│                 │    │                 │    │                 │
-│ • Monitoramento │    │ • Consultas     │    │ • Ferramentas   │
-│ • Erros         │    │ • CRUD          │    │   Específicas   │
-│ • Performance   │    │ • Análises      │    │ • Integrações   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+**Quando usar:** Geração rápida sem complexidade
+**Vantagens:** Simples, direto, sem dependências
+
+### 2. **Para Turso Database** 
+```bash
+cd prp-agent
+python demo_turso_specialist_prp.py
+```
+**Quando usar:** Operações específicas com Turso
+**Vantagens:** Expertise em Turso & MCP
+
+### 3. **Via Agente Conversacional**
+```bash
+cd agents
+python cli.py
+```
+**Quando usar:** Interface interativa natural
+**Vantagens:** Análise LLM inteligente
+
+## 🚀 Qual Usar?
+
+```mermaid
+graph TD
+    A[Preciso gerar um PRP] --> B{Qual contexto?}
+    B -->|Uso geral/rápido| C[generate_prp_simple.py]
+    B -->|Turso Database| D[demo_turso_specialist_prp.py]
+    B -->|Conversa/análise| E[agents/cli.py]
 ```
 
-## 🔧 **Métodos de Integração**
+## 📝 Exemplo Rápido
 
-### 1. **Integração Direta via MCP Tools**
+### Opção 1: Gerador Simples (Mais Usado)
+```bash
+cd prp-agent
+python generate_prp_simple.py
 
-O agente PRP pode usar as ferramentas MCP diretamente:
+# Responda as perguntas:
+# > Nome do PRP: sistema-auth
+# > Descrição: Sistema de autenticação JWT
+# > Objetivo: Implementar login seguro
+```
 
+### Opção 2: Para Turso
+```bash
+cd prp-agent
+python demo_turso_specialist_prp.py
+
+# Siga o assistente especializado
+```
+
+### Opção 3: Conversacional
+```bash
+cd agents
+python cli.py
+
+# Digite: "Crie um PRP para sistema de pagamentos"
+```
+
+## ✨ Dica Final
+
+Para 90% dos casos, use `generate_prp_simple.py` - é a forma mais rápida e eficiente!
+
+---
+*Guia simplificado - 3 formas essenciais de gerar PRPs*',
+    '# 🎯 Guia Simplificado: Como Gerar PRPs ## ✅ 3 Formas Essenciais de Gerar PRPs ### 1. **Para Uso Geral** ⭐ RECOMENDADO ```bash cd prp-agent python generate_prp_simple.py ``` **Quando usar:** Geração rápida sem complexidade **Vantagens:** Simples, direto, sem dependências ### 2. **Para Turso Database** ```bash cd prp-agent python demo_turso_specialist_prp.py ```...',
+    'prp-system',
+    'root',
+    'ee4d251032a162d655ea0a0e32f3b8b9d12fbf43a6ad6a45c013d034bddf294d',
+    1523,
+    '2025-08-02T12:47:41.587349',
+    '{"synced_at": "2025-08-03T03:32:01.093804", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'prp-system/analysis/CONSOLIDACAO_GERADORES_PRP.md',
+    '🔧 Plano de Consolidação: Geradores de PRP',
+    '# 🔧 Plano de Consolidação: Geradores de PRP
+
+## 📊 Situação Atual
+
+- **25 scripts** relacionados a PRP em `/prp-agent`
+- **Muita redundância** e confusão
+- **Necessidade de simplificação** urgente
+
+## 🎯 Proposta de Consolidação
+
+### ✅ MANTER (3 Scripts Essenciais)
+
+1. **generate_prp_simple.py** - Gerador principal
+2. **demo_turso_specialist_prp.py** - Para Turso
+3. **cli.py** em `/agents` - Interface conversacional
+
+### 🗑️ REMOVER/ARQUIVAR (22 Scripts)
+
+#### Scripts de Listagem (12 arquivos redundantes):
+- list_prps.py
+- list_prps_from_turso.py
+- list_prps_real_mcp.py
+- list_prps_with_agent.py
+- list_prps_via_api.py
+- list_prps_real_cursor.py
+- list_prps_mcp_tools.py
+- list_prps_working_tools.py
+- list_prps_cursor_agent_real.py
+- list_prps_real_agent.py
+- create_and_list_prps.py
+- list_prps_final.py
+
+**Motivo:** Todos fazem a mesma coisa com pequenas variações
+
+#### Scripts de Remoção (3 arquivos):
+- remover_prp.py
+- remover_prp_fixed.py
+- delete_prp_tool.py
+
+**Motivo:** Funcionalidade deve estar no agente principal
+
+#### Scripts Redundantes (7 arquivos):
+- generate_prp.py (versão complexa do simple)
+- create_prp_manual.py (duplica generate_prp_simple)
+- exemplo_prp_organizacao.py (apenas exemplo)
+- use_turso_specialist_prp.py (duplica demo)
+- test_prp_agent.py (teste, mover para /tests)
+- prp_mcp_integration.py (já migrado)
+- sentry_prp_agent_setup.py (já em monitoring/)
+
+## 📦 Ação de Consolidação
+
+### Criar Script Unificado: `prp_tools.py`
 ```python
-# agents/mcp_integration.py
-from mcp import ClientSession
-from mcp.client.stdio import stdio_client
-
-class MCPCursorIntegration:
-    """Integração com MCPs do Cursor."""
-    
-    def __init__(self):
-        self.turso_client = None
-        self.sentry_client = None
-    
-    async def connect_turso(self):
-        """Conectar ao MCP Turso."""
-        # Conectar ao MCP Turso via stdio
-        transport = await stdio_client()
-        self.turso_client = ClientSession(transport)
-        
-        # Listar ferramentas disponíveis
-        tools = await self.turso_client.list_tools()
-        return tools
-    
-    async def store_prp_via_mcp(self, prp_data):
-        """Armazenar PRP via MCP Turso."""
-        result = await self.turso_client.call_tool(
-            "turso_execute_query",
-            {
-                "query": "INSERT INTO prps (...) VALUES (...)",
-                "params": prp_data
-            }
-        )
-        return result
+# Consolidar funcionalidades em um único módulo
+class PRPTools:
+    def generate_simple(self): ...
+    def generate_turso(self): ...
+    def list_all(self): ...
+    def delete(self, id): ...
+    def search(self, query): ...
 ```
 
-### 2. **Integração via Extensão Cursor**
+### Estrutura Final:
+```
+prp-agent/
+├── generate_prp_simple.py    # Gerador principal
+├── demo_turso_specialist.py  # Demo Turso
+├── prp_tools.py             # Ferramentas consolidadas
+└── archive/                 # Scripts antigos arquivados
+```
 
-Criar uma extensão Cursor que usa o agente PRP:
+## 🚀 Benefícios
 
-```typescript
-// cursor-extension/src/extension.ts
-import * as vscode from ''vscode'';
+1. **De 25 para 3 scripts** principais
+2. **88% de redução** em complexidade
+3. **Interface clara** e intuitiva
+4. **Manutenção simplificada**
+5. **Menos confusão** para usuários
+
+## 📝 Próximos Passos
+
+1. Criar `prp_tools.py` consolidado
+2. Mover scripts para `archive/`
+3. Atualizar documentação
+4. Testar funcionalidades essenciais
+
+---
+*Plano para simplificar de 25 para 3 scripts de PRP*',
+    '# 🔧 Plano de Consolidação: Geradores de PRP ## 📊 Situação Atual - **25 scripts** relacionados a PRP em `/prp-agent` - **Muita redundância** e confusão - **Necessidade de simplificação** urgente ## 🎯 Proposta de Consolidação ### ✅ MANTER (3 Scripts Essenciais) 1. **generate_prp_simple.py** - Gerador principal 2. **demo_turso_specialist_prp.py** - Para...',
+    'prp-system',
+    'analysis',
+    '6faea21a5cfdb3123751946d9a81c1c3fd44c8f8a473f04071aaed725b8be059',
+    2360,
+    '2025-08-02T12:48:08.576895',
+    '{"synced_at": "2025-08-03T03:32:01.094058", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'prp-system/analysis/PRP_DUPLICIDADE_ANALISE.md',
+    '🔍 Análise de Duplicidade: 12 Formas de PRP no Projeto',
+    '# 🔍 Análise de Duplicidade: 12 Formas de PRP no Projeto
+
+## 📊 Resumo Executivo
+
+Após análise detalhada, identifiquei que das **12 formas de PRP**, existem:
+- **3 formas essenciais** que devem ser mantidas
+- **4 formas redundantes** que podem ser removidas
+- **5 formas complementares** que podem ser arquivadas
+
+## ✅ PRPs ESSENCIAIS (MANTER)
+
+### 1. **PRP ESPECIALISTA TURSO** ⭐
+- **Local**: `turso-agent/agents/turso_specialist.py`
+- **Motivo**: Implementação específica e otimizada para Turso Database
+- **Funcionalidades únicas**: MCP Integration, Performance optimization, Security
+- **Status**: MANTER - É a forma correta para Turso
+
+### 2. **PRP AGENT PYDANTAICAI** ⭐
+- **Local**: `prp-agent/agents/agent.py`
+- **Motivo**: Agente principal do sistema com análise LLM
+- **Funcionalidades únicas**: Interface conversacional, CRUD completo
+- **Status**: MANTER - Core do sistema
+
+### 3. **PRP TEMPLATE BASE** ⭐
+- **Local**: `prp-agent/PRPs/templates/prp_pydantic_ai_base.md`
+- **Motivo**: Template essencial para criar novos PRPs
+- **Funcionalidades únicas**: Estrutura padrão completa
+- **Status**: MANTER - Template principal
+
+## ❌ PRPs REDUNDANTES (REMOVER)
+
+### 4. **PRP AGENT ORIGINAL**
+- **Local**: `prp-agent/PRPs/PRP_AGENT.md`
+- **Duplica**: PRP AGENT UPDATED
+- **Ação**: REMOVER - Versão desatualizada
+
+### 5. **PRP REAL MCP INTEGRATION**
+- **Local**: `py-prp/real_mcp_integration.py`
+- **Duplica**: PRP MCP INTEGRATION
+- **Ação**: REMOVER - Funcionalidade similar
+
+### 6. **PRP AGENT UPDATED**
+- **Local**: `prp-agent/PRPs/PRP_AGENT_UPDATED.md`
+- **Duplica**: PRP AGENT PYDANTAICAI (implementação)
+- **Ação**: REMOVER - Apenas documentação, código já existe
+
+### 7. **PRP INITIAL**
+- **Local**: `prp-agent/PRPs/INITIAL.md`
+- **Duplica**: PRP TEMPLATE BASE (mais completo)
+- **Ação**: REMOVER - Template básico demais
+
+## 📦 PRPs COMPLEMENTARES (ARQUIVAR)
+
+### 8. **PRP MCP INTEGRATION**
+- **Local**: `py-prp/prp_mcp_integration.py`
+- **Status**: ARQUIVAR em `prp-agent/integrations/`
+- **Motivo**: Útil mas não essencial
+
+### 9. **PRP SENTRY INTEGRATION**
+- **Local**: `py-prp/prp_agent_sentry_integration.py`
+- **Status**: ARQUIVAR em `prp-agent/monitoring/`
+- **Motivo**: Integração específica
+
+### 10. **PRP MEMORY SYSTEM**
+- **Local**: `py-prp/memory_demo.py`
+- **Status**: ARQUIVAR em `prp-agent/examples/demos/`
+- **Motivo**: Demonstração útil
+
+### 11. **PRP SMART SYNC**
+- **Local**: `py-prp/mcp_smart_sync.py`
+- **Status**: ARQUIVAR em `scripts/archive/`
+- **Motivo**: Já temos unified_sync.py
+
+### 12. **PRP USE-CASES**
+- **Local**: `use-cases/pydantic-ai/PRPs/`
+- **Status**: MANTER NO LOCAL
+- **Motivo**: Casos de uso específicos
+
+## 🎯 Plano de Ação
+
+### Fase 1: Remover Duplicados
+```bash
+# Remover PRPs redundantes
+rm prp-agent/PRPs/PRP_AGENT.md
+rm prp-agent/PRPs/PRP_AGENT_UPDATED.md
+rm prp-agent/PRPs/INITIAL.md
+rm py-prp/real_mcp_integration.py  # Já foi migrado
+```
+
+### Fase 2: Arquivar Complementares
+```bash
+# Já foi feito na migração py-prp → prp-agent
+# Scripts foram movidos para:
+# - prp-agent/integrations/
+# - prp-agent/monitoring/
+# - prp-agent/examples/demos/
+```
+
+### Fase 3: Documentar Estrutura Final
+```bash
+# Criar documentação consolidada
+docs/04-prp-system/PRP_FORMAS_CONSOLIDADAS.md
+```
+
+## 📊 Resultado Final
+
+De **12 formas** passaremos para **3 formas essenciais**:
+
+1. **PRP Especialista Turso** - Para Turso Database
+2. **PRP Agent PydanticAI** - Agente principal
+3. **PRP Template Base** - Para criar novos PRPs
+
+## 💡 Benefícios da Consolidação
+
+- ✅ **Redução de 75%** em duplicidade
+- ✅ **Clareza**: Apenas 3 formas principais
+- ✅ **Manutenção**: Menos código para manter
+- ✅ **Foco**: Cada PRP tem propósito único
+- ✅ **Organização**: Estrutura limpa e intuitiva
+
+## 🚀 Próximos Passos
+
+1. Executar remoção dos arquivos redundantes
+2. Atualizar documentação para refletir nova estrutura
+3. Criar guia simplificado: "Qual PRP usar?"
+4. Testar os 3 PRPs essenciais
+
+---
+*Análise concluída - 9 formas podem ser removidas ou arquivadas*',
+    '# 🔍 Análise de Duplicidade: 12 Formas de PRP no Projeto ## 📊 Resumo Executivo Após análise detalhada, identifiquei que das **12 formas de PRP**, existem: - **3 formas essenciais** que devem ser mantidas - **4 formas redundantes** que podem ser removidas - **5 formas complementares** que podem ser arquivadas...',
+    'prp-system',
+    'analysis',
+    '6dc774b71c4c08a92a017d41e7695d0965fa7baa69f538d91d8623008d355d05',
+    3986,
+    '2025-08-02T12:41:05.069454',
+    '{"synced_at": "2025-08-03T03:32:01.094370", "sync_version": "1.0"}'
+)
+ON CONFLICT(file_path) DO UPDATE SET
+    title = excluded.title,
+    content = excluded.content,
+    summary = excluded.summary,
+    cluster = excluded.cluster,
+    category = excluded.category,
+    file_hash = excluded.file_hash,
+    size = excluded.size,
+    last_modified = excluded.last_modified,
+    metadata = excluded.metadata,
+    updated_at = CURRENT_TIMESTAMP;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'prp-system/status/PRP_TABELAS_STATUS.md',
+    '📊 Status das Tabelas PRP - Turso Database',
+    '# 📊 Status das Tabelas PRP - Turso Database
+
+## 🎯 Resumo Executivo
+
+✅ **PROBLEMA RESOLVIDO**: As tabelas PRP estão totalmente criadas e populadas no banco local SQLite (`context-memory.db`) e prontas para migração ao Turso!
+
+## 📈 Estatísticas Finais
+
+| Tabela | Registros | Status |
+|--------|-----------|--------|
+| **PRPs** | 7 | ✅ Completo |
+| **Tarefas** | 34 | ✅ Completo |
+| **Tags** | 20 | ✅ Completo |
+| **Contexto** | 20 | ✅ Completo |
+| **Análises LLM** | 4 | ✅ Completo |
+
+## 🏗️ PRPs Implementados
+
+### 1. **mcp-prp-server** (ID: 1)
+- **Status**: Active | **Prioridade**: High
+- **Objetivo**: Servidor MCP para Análise de PRPs
+- **Tarefas**: 7 (1 completa, 1 em progresso)
+
+### 2. **turso-prp-dashboard** (ID: 2)
+- **Status**: Active | **Prioridade**: Medium  
+- **Objetivo**: Dashboard Web para Visualização de PRPs
+- **Tarefas**: 6 (1 completa, 1 em progresso)
+
+### 3. **prp-llm-analyzer** (ID: 3)
+- **Status**: Draft | **Prioridade**: High
+- **Objetivo**: Analisador LLM para Extração de Tarefas
+
+### 4. **prp-task-extractor** (ID: 4)
+- **Status**: Active | **Prioridade**: Critical
+- **Objetivo**: Extrator Automático de Tarefas de PRPs
+- **Tarefas**: 7 (1 completa, 1 em progresso)
+
+### 5. **prp-collaboration-platform** (ID: 5)
+- **Status**: Draft | **Prioridade**: Medium
+- **Objetivo**: Plataforma de Colaboração para PRPs
+- **Tarefas**: 7 (1 completa, 1 em progresso)
+
+### 6. **prp-analytics-dashboard** (ID: 6)
+- **Status**: Active | **Prioridade**: High
+- **Objetivo**: Dashboard de Analytics para PRPs
+- **Tarefas**: 7 (1 completa, 1 em progresso)
+
+## 🏷️ Tags Implementadas
+
+**Tecnologias**: backend, frontend, api, database, mcp, llm, ai
+**Processos**: testing, documentation, automation, collaboration
+**UI/UX**: ui/ux, dashboard, realtime
+**Data**: analytics, ml, data
+**Infraestrutura**: devops, security, performance
+
+## 📋 Estrutura das Tabelas
+
+### Tabelas Principais
+- ✅ `prps` - Tabela principal de PRPs
+- ✅ `prp_tasks` - Tarefas extraídas dos PRPs
+- ✅ `prp_context` - Contexto e arquivos relacionados
+- ✅ `prp_tags` - Sistema de tags
+- ✅ `prp_tag_relations` - Relacionamento PRP-Tags
+- ✅ `prp_history` - Histórico de mudanças
+- ✅ `prp_llm_analysis` - Análises feitas por LLM
+
+### Views Criadas
+- ✅ `v_prps_with_task_count` - PRPs com contagem de tarefas
+- ✅ `v_prps_with_tags` - PRPs com suas tags
+- ✅ `v_prp_progress` - Análise de progresso dos PRPs
+
+### Índices e Triggers
+- ✅ Índices de performance para busca rápida
+- ✅ Triggers para atualização automática de timestamps
+- ✅ Constraints de integridade referencial
+
+## 🚀 Próximos Passos
+
+### Para Visualização no Turso Web Interface:
+
+1. **Autenticar no Turso CLI**:
+   ```bash
+   export PATH="/home/ubuntu/.turso:$PATH"
+   turso auth login
+   ```
+
+2. **Executar Migração**:
+   ```bash
+   turso db shell context-memory < sql-db/migrate_prp_to_turso_complete.sql
+   ```
+
+3. **Verificar no Web Interface**:
+   - Acesse https://app.turso.tech
+   - Selecione o banco `context-memory`
+   - As tabelas PRP devem aparecer na lista
+
+### Scripts Disponíveis:
+
+- ✅ `sql-db/migrate_prp_to_turso_complete.sql` - Migração completa
+- ✅ `sql-db/verify_prp_tables.sql` - Verificação e relatórios
+- ✅ `sql-db/enhance_prp_data.sql` - Dados adicionais
+
+## 🔍 Como Verificar Localmente
+
+```bash
+# Verificar contagem de registros
+sqlite3 context-memory.db "SELECT ''PRPs:'', COUNT(*) FROM prps;
+
+INSERT INTO docs (
+    file_path, title, content, summary, cluster, category,
+    file_hash, size, last_modified, metadata
+) VALUES (
+    'prp-system/guides/README_PRP_TURSO.md',
+    '🚀 Tabelas PRP no Turso - Guia Completo',
+    '# 🚀 Tabelas PRP no Turso - Guia Completo
+
+## ✅ Status: FUNCIONANDO!
+
+As tabelas PRP estão **totalmente implementadas e funcionando** no banco SQLite local e prontas para visualização no Turso web interface!
+
+## 📊 O que foi criado:
+
+### 🎯 7 PRPs completos com dados realistas:
+1. **mcp-prp-server** - Servidor MCP para análise de PRPs
+2. **turso-prp-dashboard** - Dashboard web para visualização
+3. **prp-llm-analyzer** - Analisador LLM para extração de tarefas
+4. **prp-task-extractor** - Extrator automático de tarefas
+5. **prp-collaboration-platform** - Plataforma de colaboração
+6. **prp-analytics-dashboard** - Dashboard de analytics
+7. **prp-task-extractor** - Sistema de extração automática
+
+### 📈 34 tarefas distribuídas com diferentes status:
+- ✅ **Completadas**: 7 tarefas (mostra progresso real)
+- 🔄 **Em progresso**: 7 tarefas (simulação realística)
+- ⏳ **Pendentes**: 20 tarefas (pipeline futuro)
+
+### 🏷️ 20 tags organizadas por categorias:
+- **Tecnologia**: backend, frontend, api, database, mcp, llm, ai
+- **Processo**: testing, documentation, automation, collaboration
+- **UI/UX**: ui/ux, dashboard, realtime
+- **Data**: analytics, ml, data
+- **Infraestrutura**: devops, security, performance
+
+## 🔍 Como verificar se está funcionando no Turso:
+
+### 1. Acesse a interface web do Turso:
+```
+https://app.turso.tech
+```
+
+### 2. Selecione o banco `context-memory`
+
+### 3. Procure por estas tabelas na lista:
+- ✅ `prps` (7 registros)
+- ✅ `prp_tasks` (34 registros)
+- ✅ `prp_tags` (20 registros)
+- ✅ `prp_context` (20 registros)
+- ✅ `prp_llm_analysis` (4 registros)
+- ✅ `prp_tag_relations` (23 registros)
+- ✅ `prp_history` (0 registros - normal para início)
+
+### 4. Teste estas queries no Turso SQL Editor:
+
+```sql
+-- Ver todos os PRPs
+SELECT id, name, title, status, priority FROM prps;
 

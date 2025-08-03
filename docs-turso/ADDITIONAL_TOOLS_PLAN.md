@@ -113,33 +113,32 @@
     type: 'object',
     properties: {
       database: { type: 'string', description: 'Database name' },
-      local_path: { type: 'string', description: 'Local path for replica' },
       sync_interval: { type: 'number', description: 'Sync interval in seconds' },
       encryption_key: { type: 'string', description: 'Encryption key (optional)' }
     },
-    required: ['database', 'local_path']
+    required: ['database']
   }
 },
 {
-  name: 'sync_embedded_replica',
-  description: 'Manually sync embedded replica with remote',
+  name: 'sync_cloud_database',
+  description: 'Manually sync cloud database with latest changes',
   inputSchema: {
     type: 'object',
     properties: {
-      local_path: { type: 'string', description: 'Local replica path' }
+      database: { type: 'string', description: 'Database name to sync' }
     },
-    required: ['local_path']
+    required: ['database']
   }
 },
 {
-  name: 'get_replica_status',
-  description: 'Get embedded replica sync status',
+  name: 'get_sync_status',
+  description: 'Get cloud database sync status',
   inputSchema: {
     type: 'object',
     properties: {
-      local_path: { type: 'string', description: 'Local replica path' }
+      database: { type: 'string', description: 'Database name' }
     },
-    required: ['local_path']
+    required: ['database']
   }
 }
 ```
@@ -341,7 +340,7 @@
 3. `validate_database_connection` - Validação de conexão
 
 ### **Fase 2 - Ferramentas Avançadas (Prioridade Média):**
-1. `create_embedded_replica` - Replicação local
+1. `sync_cloud_database` - Sincronização de nuvem
 2. `analyze_database_schema` - Análise de schema
 3. `similarity_search` - Busca vetorial
 
@@ -358,7 +357,7 @@
 2. **🛡️ Maior Segurança:** Certificados e validação avançada
 3. **⚡ Performance Otimizada:** Análise de queries lentas
 4. **🧠 Suporte a IA:** Vector search e embeddings
-5. **🔄 Desenvolvimento Local:** Embedded replicas
+5. **🔄 Sincronização de Nuvem:** Cloud database sync
 6. **📊 Monitoramento Completo:** Health checks e métricas
 
 ---

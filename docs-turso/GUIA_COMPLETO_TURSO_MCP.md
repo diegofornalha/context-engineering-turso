@@ -796,15 +796,26 @@ class TursoMemorySystem:
         """
         self.database_url = database_url
         self.auth_token = auth_token
-        # Para demonstração, usaremos SQLite local
-        # Em produção, usaríamos o cliente Turso
-        self.db_path = "memory_demo.db"
+        # Usar banco Turso da nuvem
         self._init_database()
     
     def _init_database(self):
         """Inicializa o banco de dados com as tabelas necessárias"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        # Usar cliente Turso da nuvem
+        try:
+            from libsql_client import create_client
+            self.client = create_client({
+                "url": self.database_url,
+                "authToken": self.auth_token
+            })
+            self.use_cloud = True
+        except ImportError:
+            # Fallback para demonstração
+            import sqlite3
+            self.db_path = "memory_demo.db"
+            self.use_cloud = False
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
         
         # Criar tabelas (mesma estrutura do Turso)
         cursor.execute("""
@@ -853,8 +864,15 @@ class TursoMemorySystem:
     def add_conversation(self, session_id: str, message: str, response: str = None, 
                         user_id: str = None, context: str = None) -> int:
         """Adiciona uma conversa à memória"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        if self.use_cloud:
+            result = self.client.execute("""
+                INSERT INTO conversations (session_id, user_id, message, response, context)
+                VALUES (?, ?, ?, ?, ?)
+            """, [session_id, user_id, message, response, context])
+            return result.lastInsertRowid
+        else:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
         
         cursor.execute("""
             INSERT INTO conversations (session_id, user_id, message, response, context)
@@ -1269,7 +1287,6 @@ __pycache__/
 .env
 .env.local
 .env.*.local
-*.db
 
 # Build
 dist/

@@ -5,27 +5,27 @@ import {
 	CallToolRequestSchema,
 	ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { get_hybrid_config, is_local_mode } from './config-hybrid.js';
-import { HybridDatabaseClient } from './clients/database-hybrid.js';
+import { get_cloud_config } from './config-hybrid.js';
+import { CloudDatabaseClient } from './clients/database-hybrid.js';
 import { WebServer } from './web-server.js';
 // import { ErrorCode } from './common/errors.js';
 
 // Get configuration
-const config = get_hybrid_config();
+const config = get_cloud_config();
 
 /**
- * Hybrid Turso MCP Server (Local + Cloud)
+ * Cloud-only Turso MCP Server
  */
-class HybridTursoServer {
+class CloudTursoServer {
 	private server: Server;
-	private db_client: HybridDatabaseClient;
+	private db_client: CloudDatabaseClient;
 	
 	constructor() {
-		this.db_client = new HybridDatabaseClient();
+		this.db_client = new CloudDatabaseClient();
 		
 		// Initialize server
 		this.server = new Server({
-			name: 'mcp-turso-hybrid',
+			name: 'mcp-turso-cloud',
 			version: '1.0.0',
 		}, {
 			capabilities: {
@@ -102,111 +102,83 @@ class HybridTursoServer {
 				},
 			];
 			
-			// Add mode info to descriptions
-			const mode = config.TURSO_MODE;
-			return {
-				tools: tools.map(tool => ({
-					...tool,
-					description: `${tool.description} [Mode: ${mode}]`,
-				})),
-			};
+			return { tools };
 		});
 		
 		// Handle tool calls
 		this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-			const { name, arguments: args } = request.params as { name: string; arguments?: any };
+			const { name, arguments: args } = request.params;
 			
 			try {
 				switch (name) {
 					case 'execute_read_only_query':
 						const readResult = await this.db_client.execute_read_only_query(
-							args?.query || '',
-							args?.database
+							args.query,
+							args.database
 						);
-						return {
-							content: [{
-								type: 'text',
-								text: JSON.stringify(readResult, null, 2),
-							}],
-						};
+						return { content: [{ type: 'text', text: JSON.stringify(readResult, null, 2) }] };
 						
 					case 'execute_query':
 						const result = await this.db_client.execute_query(
-							args?.query || '',
-							args?.database
+							args.query,
+							args.database
 						);
-						return {
-							content: [{
-								type: 'text',
-								text: JSON.stringify(result, null, 2),
-							}],
-						};
+						return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
 						
 					case 'list_databases':
 						const databases = await this.db_client.list_databases();
-						return {
-							content: [{
-								type: 'text',
-								text: JSON.stringify(databases, null, 2),
-							}],
-						};
+						return { content: [{ type: 'text', text: JSON.stringify(databases, null, 2) }] };
 						
 					case 'get_database_info':
-						const info = await this.db_client.get_database_info(args?.database || 'local');
-						return {
-							content: [{
-								type: 'text',
-								text: JSON.stringify(info, null, 2),
-							}],
-						};
+						const info = await this.db_client.get_database_info(args?.database || config.TURSO_DEFAULT_DATABASE);
+						return { content: [{ type: 'text', text: JSON.stringify(info, null, 2) }] };
 						
 					default:
 						throw new Error(`Unknown tool: ${name}`);
 				}
-			} catch (error: any) {
-				return {
-					content: [{
-						type: 'text',
-						text: `Error: ${error.message}`,
-					}],
-					isError: true,
-				};
+			} catch (error) {
+				console.error(`Error executing tool ${name}:`, error);
+				throw error;
 			}
 		});
 	}
 	
 	async start(): Promise<void> {
-		const mode = config.TURSO_MODE;
-		console.error(`Starting Hybrid Turso MCP Server in ${mode.toUpperCase()} mode...`);
+		console.log(`🚀 Starting Cloud Turso MCP Server...`);
+		console.log(`📊 Database: ${config.TURSO_DEFAULT_DATABASE}`);
+		console.log(`🏢 Organization: ${config.TURSO_ORGANIZATION}`);
+		console.log(`☁️ Mode: Cloud-only`);
 		
-		if (is_local_mode()) {
-			console.error(`Local URL: ${config.TURSO_LOCAL_URL}`);
-		} else {
-			console.error(`Organization: ${config.TURSO_ORGANIZATION}`);
-			console.error(`Default Database: ${config.TURSO_DEFAULT_DATABASE || 'not set'}`);
-		}
-		
+		// Start the server
 		const transport = new StdioServerTransport();
 		await this.server.connect(transport);
-		console.error('Server started successfully');
+		
+		console.log(`✅ Cloud Turso MCP Server started successfully!`);
+	}
+	
+	async stop(): Promise<void> {
+		this.db_client.close();
+		await this.server.close();
 	}
 }
 
-// Main entry point
+// Legacy class name for compatibility
+class HybridTursoServer extends CloudTursoServer {
+	// All functionality inherited from CloudTursoServer
+}
+
 async function main() {
+	const server = new CloudTursoServer();
+	
 	try {
-		// Iniciar servidor web para página de status
-		const webServer = new WebServer(3000);
-		await webServer.start();
-		
-		// Iniciar servidor MCP
-		const server = new HybridTursoServer();
 		await server.start();
-	} catch (error: any) {
-		console.error('Failed to start server:', error.message);
+	} catch (error) {
+		console.error('Failed to start server:', error);
 		process.exit(1);
 	}
 }
 
-// Start the server
+if (import.meta.url === `file://${process.argv[1]}`) {
+	main().catch(console.error);
+}
 main().catch(console.error);
