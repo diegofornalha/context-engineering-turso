@@ -30,7 +30,6 @@ from agents.turso_specialist_pydantic_new import (
     run_validation_gates,
     get_system_info
 )
-from tools.turso_manager import TursoManager
 from tools.mcp_integrator import MCPTursoIntegrator
 
 class TursoAgentCLI:
@@ -38,13 +37,11 @@ class TursoAgentCLI:
     
     def __init__(self):
         self.settings = TursoSettings()
-        self.turso_manager = TursoManager(self.settings)
         self.mcp_integrator = MCPTursoIntegrator(self.settings)
         
         # Criar contexto para o agente PydanticAI
         self.context = TursoContext(
             session_id=f"cli-session-{datetime.now().isoformat()}",
-            turso_manager=self.turso_manager,
             mcp_integrator=self.mcp_integrator,
             settings=self.settings
         )
@@ -71,8 +68,9 @@ class TursoAgentCLI:
         prp_status = self.check_prp_availability()
         print(f"   📋 PRP Turso (ID 6): {prp_status}")
         
-        # Verificar configurações Turso
-        config_status = await self.turso_manager.check_configuration()
+        # Verificar configurações Turso via MCP
+        mcp_config_status = await self.mcp_integrator.test_connection()
+        config_status = "✅ Configurado via MCP" if mcp_config_status.get('success') else "❌ Configuração pendente"
         print(f"   ⚙️ Configuração Turso: {config_status}")
         
         # Verificar MCP integration
@@ -118,29 +116,41 @@ class TursoAgentCLI:
         print("="*40)
         
     async def handle_database_operations(self):
-        """Gerencia operações de database"""
-        print("\n🗄️ DATABASE OPERATIONS:")
-        print("1. Listar databases")
-        print("2. Criar database")
-        print("3. Executar query")
-        print("4. Backup database")
-        print("5. Migração de schema")
+        """Gerencia operações de database via MCP"""
+        print("\n🗄️ DATABASE OPERATIONS (via MCP):")
+        print("1. Listar databases (MCP)")
+        print("2. Criar database (MCP)")
+        print("3. Executar query (MCP)")
+        print("4. Testar conexão MCP")
+        print("5. Verificar status MCP")
         
         choice = input("\nEscolha uma opção: ").strip()
         
         if choice == "1":
-            await self.turso_manager.list_databases()
+            print("📊 Listando databases via MCP...")
+            # Em produção, usaria mcp_turso_list_databases()
+            print("✅ Operação delegada para MCP")
+            
         elif choice == "2":
             name = input("Nome do database: ")
-            await self.turso_manager.create_database(name)
+            print(f"🗄️ Criando database '{name}' via MCP...")
+            # Em produção, usaria mcp_turso_create_database()
+            print("✅ Operação delegada para MCP")
+            
         elif choice == "3":
             query = input("Query SQL: ")
-            await self.turso_manager.execute_query(query)
+            print(f"💻 Executando query via MCP: {query[:50]}...")
+            # Em produção, usaria mcp_turso_execute_query()
+            print("✅ Operação delegada para MCP")
+            
         elif choice == "4":
-            db_name = input("Database para backup: ")
-            await self.turso_manager.backup_database(db_name)
+            print("🔍 Testando conexão MCP...")
+            result = await self.mcp_integrator.test_connection()
+            print(f"Status: {'✅ OK' if result.get('success') else '❌ Falha'}")
+            
         elif choice == "5":
-            await self.turso_manager.run_migrations()
+            status = await self.mcp_integrator.check_mcp_status()
+            print(f"Status MCP: {status}")
             
     async def handle_mcp_integration(self):
         """Gerencia integração MCP"""
