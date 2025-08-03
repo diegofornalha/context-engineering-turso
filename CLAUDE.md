@@ -1,5 +1,58 @@
 # Claude Code Configuration - SPARC Development Environment (Batchtools Optimized)
 
+## 🚨 PRIORIDADE CRÍTICA: Sempre Usar Subagents e MCPs
+
+### 🎯 REGRA #1: PRIORIZAR SUBAGENTS
+**SEMPRE** verifique e use subagents especializados antes de executar tarefas diretamente:
+- ✅ **Subagents disponíveis**: Use `Task` com `subagent_type` apropriado
+- ✅ **54+ agentes especializados**: Cada um otimizado para tarefas específicas
+- ✅ **Melhor performance**: Subagents têm contexto e ferramentas especializadas
+
+### 🔍 REGRA #2: VERIFICAR MCPs DISPONÍVEIS
+**SEMPRE** verifique se existe uma ferramenta MCP antes de usar comandos básicos:
+- ✅ **MCP Turso**: Para operações de banco de dados (não use SQL direto)
+- ✅ **MCP Claude Flow**: Para coordenação e memória (não reimplemente)
+- ✅ **MCP ruv-swarm**: Para orquestração avançada
+- ✅ **Outros MCPs**: Sempre prefira ferramentas MCP sobre implementações manuais
+
+### 📋 CHECKLIST OBRIGATÓRIO
+Antes de QUALQUER tarefa, pergunte-se:
+1. **Existe um subagent especializado para isso?** → Use `Task` com subagent
+2. **Existe uma ferramenta MCP para isso?** → Use a ferramenta MCP
+3. **Preciso coordenar múltiplas operações?** → Use swarms do Claude Flow
+4. Apenas se NENHUMA das opções acima: Execute diretamente
+
+### 🎨 Exemplos Práticos
+
+**✅ CORRETO - Usar Subagent PRP:**
+```javascript
+Task({
+  description: "Generate PRP",
+  prompt: "Create PRP about authentication",
+  subagent_type: "prp-specialist"
+})
+```
+
+**❌ ERRADO - Implementar manualmente:**
+```javascript
+// NÃO faça isso se existe subagent!
+Write("prp_auth.md", "# PRP: Authentication...")
+```
+
+**✅ CORRETO - Usar MCP Turso:**
+```javascript
+mcp__mcp_turso__add_knowledge({
+  topic: "Authentication",
+  content: "..."
+})
+```
+
+**❌ ERRADO - SQL direto:**
+```javascript
+// NÃO faça isso se existe MCP!
+Bash("sqlite3 database.db 'INSERT INTO...'")
+```
+
 ## 🚨 CRITICAL: CONCURRENT EXECUTION FOR ALL ACTIONS
 
 **ABSOLUTE RULE**: ALL operations MUST be concurrent/parallel in a single message:
@@ -162,6 +215,61 @@ npx claude-flow sparc run integration "integrate authentication with user manage
 - Regular security reviews with parallel analysis for authentication or data handling code
 - Claude Code slash commands provide quick access to batchtools-optimized SPARC modes
 - Monitor system resources during parallel operations for optimal performance
+
+## 🎯 Subagents Prioritários (Use SEMPRE que Possível!)
+
+### 🧠 Subagents Especializados do Projeto
+
+#### **PRP Specialist** (`prp-specialist`)
+- **Localização**: `.claude/agents/specialized/prp/prp-specialist.md`
+- **Uso**: Geração, validação e gerenciamento de PRPs
+- **Integração**: prp-agent Python + MCP Turso
+- **Exemplo**:
+```javascript
+Task({
+  description: "Generate authentication PRP",
+  prompt: "Create comprehensive PRP about JWT authentication",
+  subagent_type: "prp-specialist"
+})
+```
+
+### 🔧 Ferramentas MCP Disponíveis (Verificar SEMPRE!)
+
+#### **MCP Turso** (27 ferramentas)
+- `mcp__mcp_turso__list_databases` - Listar bancos
+- `mcp__mcp_turso__add_knowledge` - Adicionar conhecimento
+- `mcp__mcp_turso__search_knowledge` - Buscar conhecimento
+- `mcp__mcp_turso__execute_query` - Executar queries
+- `mcp__mcp_turso__vector_search` - Busca vetorial
+- [... e mais 22 ferramentas]
+
+#### **MCP Claude Flow** (45+ ferramentas)
+- `mcp__claude_flow__swarm_init` - Inicializar swarm
+- `mcp__claude_flow__agent_spawn` - Criar agentes
+- `mcp__claude_flow__memory_usage` - Memória persistente
+- `mcp__claude_flow__task_orchestrate` - Orquestrar tarefas
+- [... e mais 40+ ferramentas]
+
+#### **MCP ruv-swarm** (25+ ferramentas)
+- `mcp__ruv_swarm__swarm_init` - Swarm sem timeout
+- `mcp__ruv_swarm__neural_train` - Treinar padrões
+- `mcp__ruv_swarm__daa_agent_create` - Agentes autônomos
+- [... e mais 20+ ferramentas]
+
+### ⚡ Fluxo de Decisão Rápido
+
+```mermaid
+graph TD
+    A[Nova Tarefa] --> B{É sobre PRPs?}
+    B -->|Sim| C[Use prp-specialist]
+    B -->|Não| D{É banco de dados?}
+    D -->|Sim| E[Use MCP Turso]
+    D -->|Não| F{Precisa coordenação?}
+    F -->|Sim| G[Use Claude Flow Swarm]
+    F -->|Não| H{Existe subagent específico?}
+    H -->|Sim| I[Use o subagent]
+    H -->|Não| J[Execute diretamente]
+```
 
 ## Available Agents (54 Total)
 
