@@ -1,0 +1,23 @@
+
+🔄 RELATÓRIO DE SINCRONIZAÇÃO TURSO KNOWLEDGE
+==================================================
+
+📊 RESULTADOS:
+• Arquivos escaneados: 12
+• Conhecimento extraído: 12
+• Registros atualizados: 0
+• Novos registros: 1
+• Obsoletos removidos: 0
+
+📝 LOG DE MUDANÇAS:
+• Novo: Prp Delegation Strategy
+
+⏰ Timestamp: 2025-08-02 21:21:51
+✅ Sincronização concluída!
+
+INTEGRIDADE: {
+  "duplicates": 10,
+  "empty_content": 0,
+  "empty_tags": 0,
+  "total_records": 22
+}

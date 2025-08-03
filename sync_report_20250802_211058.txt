@@ -1,0 +1,33 @@
+
+🔄 RELATÓRIO DE SINCRONIZAÇÃO TURSO KNOWLEDGE
+==================================================
+
+📊 RESULTADOS:
+• Arquivos escaneados: 11
+• Conhecimento extraído: 11
+• Registros atualizados: 0
+• Novos registros: 11
+• Obsoletos removidos: 0
+
+📝 LOG DE MUDANÇAS:
+• Novo: Improvements Plan
+• Novo: Additional Tools Plan
+• Novo: Resumo Final Turso Sentry
+• Novo: Plan
+• Novo: Turso Configuration Summary
+• Novo: Env Configuration Summary
+• Novo: Guia Completo Turso Mcp
+• Novo: Turso Memory Readme
+• Novo: Turso Jwt Token Learning
+• Novo: Mcp Turso Migration Plan
+• Novo: Docs Turso Migration Success
+
+⏰ Timestamp: 2025-08-02 21:10:58
+✅ Sincronização concluída!
+
+INTEGRIDADE: {
+  "duplicates": 10,
+  "empty_content": 0,
+  "empty_tags": 0,
+  "total_records": 21
+}

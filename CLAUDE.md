@@ -101,9 +101,33 @@ context-engineering-turso/
 - **Nunca delete ou sobrescreva código existente** a menos que seja explicitamente instruído ou se fizer parte de uma tarefa de `TASK.md`
 - **Sempre responda em português brasileiro (pt-BR)**
 
+## 🔍 Consultas MCP Turso para PRPs
+
+- **SEMPRE consulte o MCP Turso** quando perguntas envolverem PRPs, conhecimento ou conversas
+- **Use mcp_turso_search_knowledge** para buscar informações sobre PRPs no banco de dados
+- **Use mcp_turso_execute_read_only_query** para consultas SQL específicas sobre PRPs
+- **Use mcp_turso_get_conversations** para buscar conversas relacionadas a PRPs
+- **Priorize dados do banco Turso** sobre informações genéricas ou assumidas
+- **Sempre verifique o contexto-memory** antes de responder sobre PRPs
+- **Use mcp_turso_list_tables** para entender a estrutura do banco quando necessário
+
+## 🚀 MCP Turso - Uso Universal no Cursor
+
+- **SEMPRE use o MCP Turso** quando precisar fazer qualquer coisa no Cursor Agent
+- **Priorize consultas ao banco** antes de assumir ou usar informações genéricas
+- **Use mcp_turso_search_knowledge** para buscar qualquer informação no sistema
+- **Use mcp_turso_execute_read_only_query** para consultas SQL específicas
+- **Use mcp_turso_get_conversations** para buscar histórico de conversas
+- **Use mcp_turso_add_conversation** para registrar novas conversas importantes
+- **Use mcp_turso_add_knowledge** para adicionar conhecimento ao sistema
+- **Sempre verifique o contexto-memory** antes de responder qualquer pergunta
+- **Consulte o banco Turso** para dados sobre: PRPs, agentes, arquiteturas, configurações, status do projeto
+- **Use mcp_turso_list_databases** e **mcp_turso_list_tables** para entender a estrutura dos dados
+- **Priorize dados reais do sistema** sobre informações genéricas ou assumidas
+
 ## 🔄 Sincronização com .cursorrules
 
 Este arquivo deve estar sempre sincronizado com `.cursorrules`. Qualquer mudança em um deve ser refletida no outro para manter consistência entre Claude Code e Cursor.
 
 ---
-*Última sincronização: 02/08/2025*
+*Última sincronização: 03/08/2025*
