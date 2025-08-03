@@ -34,14 +34,20 @@ if [ -f "prp-agent.pid" ]; then
         rm -f prp-agent.pid
     fi
 else
-    # Tentar parar por porta
+    # Tentar parar por porta (verificar ambas as portas: 8000 e 5678)
     PID=$(lsof -ti:8000)
+    PID2=$(lsof -ti:5678)
+    
     if [ ! -z "$PID" ]; then
         echo "📋 Encontrado processo na porta 8000 (PID: $PID)"
         kill $PID
         echo "✅ Processo parado!"
+    elif [ ! -z "$PID2" ]; then
+        echo "📋 Encontrado processo na porta 5678 (PID: $PID2)"
+        kill $PID2
+        echo "✅ Processo parado!"
     else
-        echo "ℹ️  Nenhum processo encontrado na porta 8000"
+        echo "ℹ️  Nenhum processo encontrado nas portas 8000 ou 5678"
     fi
 fi
 

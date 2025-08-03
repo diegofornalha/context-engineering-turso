@@ -1,93 +1,62 @@
 #!/bin/bash
-# 🚀 Script de Inicialização do PRP Agent com Sentry
-# ===================================================
+# 🚀 Script para Iniciar o PRP Agent
+# =================================
 
-echo "🚀 Iniciando PRP Agent com Sentry + FastAPI..."
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}🚀 Iniciando PRP Agent...${NC}"
 
 # Verificar se estamos no diretório correto
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
 if [ ! -f "main.py" ]; then
-    echo "❌ Erro: main.py não encontrado!"
-    echo "💡 Execute este script do diretório prp-agent/"
+    echo -e "${RED}❌ Erro: main.py não encontrado!${NC}"
+    echo "Execute este script do diretório prp-agent/"
     exit 1
 fi
 
-# Verificar se o ambiente UV existe
-if [ ! -d ".venv" ]; then
-    echo "❌ Erro: Ambiente UV (.venv) não encontrado!"
-    echo "💡 Execute: uv init && uv add sentry-sdk[fastapi] fastapi uvicorn"
+# Verificar se o ambiente virtual existe
+if [ ! -d "../venv" ]; then
+    echo -e "${RED}❌ Erro: Ambiente virtual não encontrado em ../venv${NC}"
+    echo "Por favor, crie o ambiente virtual primeiro."
     exit 1
 fi
 
-# Ativar ambiente UV
-echo "📦 Ativando ambiente UV..."
-source .venv/bin/activate
+# Ativar ambiente virtual
+echo -e "${YELLOW}📦 Ativando ambiente virtual...${NC}"
+source ../venv/bin/activate
 
-# Verificar se há processo rodando na porta 8000
-PID=$(lsof -ti:8000)
-if [ ! -z "$PID" ]; then
-    echo "⚠️  Processo já rodando na porta 8000 (PID: $PID)"
-    echo "❓ Deseja parar e reiniciar? (y/n)"
-    read -r response
-    if [[ "$response" =~ ^[Yy]$ ]]; then
-        echo "🛑 Parando processo anterior..."
-        kill $PID
-        sleep 2
-    else
-        echo "❌ Cancelado. Use ./stop.sh para parar o processo atual."
-        exit 1
-    fi
+# Verificar se FastAPI está instalado
+if ! python -c "import fastapi" 2>/dev/null; then
+    echo -e "${RED}❌ Erro: FastAPI não está instalado!${NC}"
+    echo "Execute: pip install -r requirements.txt"
+    exit 1
 fi
 
-# Verificar configuração Sentry
-if [ ! -f ".env" ]; then
-    echo "⚠️  Arquivo .env não encontrado. Criando configuração básica..."
-    echo "SENTRY_DSN=https://d9fe4e8016424adebb7389d5df925764@o927801.ingest.us.sentry.io/4509774227832832" > .env
+# Verificar se a porta está livre
+if lsof -ti:5678 > /dev/null 2>&1; then
+    echo -e "${RED}❌ Erro: Porta 5678 já está em uso!${NC}"
+    PID=$(lsof -ti:5678)
+    echo "Processo usando a porta: PID $PID"
+    echo "Use './stop.sh' para parar o servidor existente"
+    exit 1
 fi
 
-# Escolher modo de execução
+# Iniciar o servidor
+echo -e "${GREEN}✅ Ambiente virtual ativado${NC}"
+echo -e "${GREEN}🌐 Iniciando servidor na porta 5678...${NC}"
 echo ""
-echo "🎯 Como deseja executar?"
-echo "1) Foreground (logs visíveis, Ctrl+C para parar)"
-echo "2) Background (daemon, use ./stop.sh para parar)"
-echo -n "Escolha (1 ou 2): "
-read -r mode
+echo -e "${YELLOW}📍 Acesse: http://localhost:5678${NC}"
+echo -e "${YELLOW}📍 Docs: http://localhost:5678/docs${NC}"
+echo -e "${YELLOW}📍 Sentry Debug: http://localhost:5678/sentry-debug${NC}"
+echo ""
+echo -e "${YELLOW}💡 Pressione Ctrl+C para parar o servidor${NC}"
+echo ""
 
-case $mode in
-    1)
-        echo "🖥️  Executando em foreground..."
-        echo "💡 Use Ctrl+C para parar"
-        echo "🌐 Acesse: http://localhost:8000"
-        echo "🐛 Debug: http://localhost:8000/sentry-debug"
-        echo ""
-        uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-        ;;
-    2)
-        echo "🔄 Executando em background..."
-        nohup uvicorn main:app --host 0.0.0.0 --port 8000 --reload > prp-agent.log 2>&1 &
-        PID=$!
-        echo $PID > prp-agent.pid
-        
-        echo "✅ PRP Agent iniciado!"
-        echo "📋 PID: $PID"
-        echo "📄 Logs: tail -f prp-agent.log"
-        echo "🌐 URL: http://localhost:8000"
-        echo "🐛 Debug: http://localhost:8000/sentry-debug"
-        echo "🛑 Parar: ./stop.sh"
-        
-        # Aguardar inicialização
-        echo "⏳ Aguardando inicialização..."
-        sleep 3
-        
-        # Testar se está respondendo
-        if curl -s http://localhost:8000/ > /dev/null; then
-            echo "🎉 Servidor online e respondendo!"
-        else
-            echo "❌ Servidor pode não ter iniciado corretamente"
-            echo "📄 Verifique os logs: tail -f prp-agent.log"
-        fi
-        ;;
-    *)
-        echo "❌ Opção inválida"
-        exit 1
-        ;;
-esac
+# Executar o servidor
+uvicorn main:app --host 0.0.0.0 --port 5678 --reload
