@@ -1,0 +1,56 @@
+{
+  "name": "distributed-ecommerce-showcase",
+  "version": "1.0.0",
+  "description": "Showcase completo integrando PRP + SPARC + Turso + Swarm para sistema e-commerce distribuído",
+  "main": "example.ts",
+  "scripts": {
+    "start": "ts-node example.ts",
+    "swarm:init": "npx claude-flow@alpha swarm init --topology hierarchical --agents 12",
+    "migrate:all": "ts-node scripts/migrate.ts",
+    "deploy:services": "ts-node scripts/deploy.ts",
+    "monitor:start": "ts-node scripts/monitor.ts",
+    "test:load": "artillery run tests/load-test.yml",
+    "demo:start": "npm run swarm:init && npm run start",
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.5.0",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "claude-flow": "alpha",
+    "express": "^4.18.2",
+    "redis": "^4.6.11",
+    "socket.io": "^4.6.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11",
+    "eslint": "^8.56.0",
+    "artillery": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "prp",
+    "sparc",
+    "turso",
+    "claude-flow",
+    "swarm",
+    "distributed-systems",
+    "edge-computing",
+    "ecommerce"
+  ],
+  "author": "Claude Flow Team",
+  "license": "MIT"
+}

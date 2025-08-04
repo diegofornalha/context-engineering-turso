@@ -1,0 +1,150 @@
+graph TB
+    subgraph "1️⃣ PRP - Context Engineering"
+        PRP_INIT[INITIAL.md<br/>Context Definition]
+        PRP_GEN[generate-prp<br/>Generate Requirements]
+        PRP_EXEC[execute-prp<br/>Validate & Execute]
+        
+        PRP_INIT -->|Requirements| PRP_GEN
+        PRP_GEN -->|Validated PRP| PRP_EXEC
+    end
+    
+    subgraph "2️⃣ SPARC - Development Methodology"
+        SPARC_S[Specification<br/>Define System]
+        SPARC_P[Pseudocode<br/>Algorithm Design]
+        SPARC_A[Architecture<br/>System Design]
+        SPARC_R[Refinement<br/>TDD Implementation]
+        SPARC_C[Completion<br/>Integration]
+        
+        SPARC_S --> SPARC_P
+        SPARC_P --> SPARC_A
+        SPARC_A --> SPARC_R
+        SPARC_R --> SPARC_C
+    end
+    
+    subgraph "3️⃣ Claude Flow Swarm - Multi-Agent Coordination"
+        QUEEN[👑 Task Orchestrator<br/>Queen Agent]
+        
+        subgraph "Development Agents"
+            ARCH[🏛️ System Architect]
+            CODER1[💻 Backend Developer]
+            CODER2[📱 Mobile Developer]
+            ANALYST[📊 Data Analyst]
+        end
+        
+        subgraph "Quality Agents"
+            SECURITY[🔒 Security Auditor]
+            TESTER[🧪 Test Generator]
+            PERF[⚡ Performance Analyzer]
+        end
+        
+        subgraph "Operations Agents"
+            MIGRATOR[🚀 Migration Specialist]
+            CICD[🔄 CI/CD Engineer]
+        end
+        
+        QUEEN -.->|coordinates| ARCH
+        QUEEN -.->|assigns| CODER1
+        QUEEN -.->|assigns| CODER2
+        QUEEN -.->|monitors| ANALYST
+        
+        ARCH -->|specs| CODER1
+        ARCH -->|specs| CODER2
+        CODER1 -->|code| TESTER
+        CODER2 -->|code| TESTER
+        TESTER -->|results| SECURITY
+        SECURITY -->|audit| PERF
+        PERF -->|optimized| CICD
+        CICD -->|deploy| MIGRATOR
+    end
+    
+    subgraph "4️⃣ Turso Edge Network - Global Database"
+        MAIN_DB[(Primary DB<br/>Main Region)]
+        
+        subgraph "Edge Replicas"
+            EDGE_US[(🇺🇸 US East<br/>12ms)]
+            EDGE_EU[(🇪🇺 EU West<br/>18ms)]
+            EDGE_ASIA[(🇯🇵 Asia<br/>25ms)]
+            EDGE_BR[(🇧🇷 Brazil<br/>58ms)]
+        end
+        
+        MAIN_DB <==>|CRDT Sync| EDGE_US
+        MAIN_DB <==>|CRDT Sync| EDGE_EU
+        MAIN_DB <==>|CRDT Sync| EDGE_ASIA
+        MAIN_DB <==>|CRDT Sync| EDGE_BR
+    end
+    
+    subgraph "5️⃣ E-commerce Services"
+        AUTH[🔐 Auth Service<br/>JWT/OAuth2]
+        PRODUCTS[📦 Product Service<br/>Catalog]
+        ORDERS[🛒 Order Service<br/>Processing]
+        INVENTORY[📊 Inventory Service<br/>Real-time]
+        ANALYTICS[📈 Analytics Service<br/>Insights]
+        
+        AUTH --> ORDERS
+        PRODUCTS --> ORDERS
+        INVENTORY --> ORDERS
+        ORDERS --> ANALYTICS
+    end
+    
+    subgraph "6️⃣ Users Worldwide"
+        US_USERS[🇺🇸 US Users]
+        EU_USERS[🇪🇺 EU Users]
+        ASIA_USERS[🇯🇵 Asia Users]
+        BR_USERS[🇧🇷 Brazil Users]
+    end
+    
+    %% Integration Flow
+    PRP_EXEC ==>|Requirements| SPARC_S
+    SPARC_C ==>|Implementation Plan| QUEEN
+    
+    MIGRATOR -->|Deploy to| MAIN_DB
+    
+    AUTH -->|Read/Write| EDGE_US
+    AUTH -->|Read/Write| EDGE_EU
+    PRODUCTS -->|Read| EDGE_ASIA
+    ORDERS -->|Write| MAIN_DB
+    
+    US_USERS -->|< 20ms| AUTH
+    EU_USERS -->|< 25ms| AUTH
+    ASIA_USERS -->|< 30ms| PRODUCTS
+    BR_USERS -->|< 60ms| ORDERS
+    
+    %% Performance Metrics
+    ANALYTICS -.->|Metrics| QUEEN
+    PERF -.->|Optimization| MAIN_DB
+    
+    %% Styling
+    style PRP_INIT fill:#FFE4B5,stroke:#FFA500,color:#000
+    style PRP_GEN fill:#FFE4B5,stroke:#FFA500,color:#000
+    style PRP_EXEC fill:#FFE4B5,stroke:#FFA500,color:#000
+    
+    style SPARC_S fill:#E6E6FA,stroke:#9370DB,color:#000
+    style SPARC_P fill:#E6E6FA,stroke:#9370DB,color:#000
+    style SPARC_A fill:#E6E6FA,stroke:#9370DB,color:#000
+    style SPARC_R fill:#E6E6FA,stroke:#9370DB,color:#000
+    style SPARC_C fill:#E6E6FA,stroke:#9370DB,color:#000
+    
+    style QUEEN fill:#FFD700,stroke:#FFD700,color:#000
+    style ARCH fill:#87CEEB,stroke:#4682B4,color:#000
+    style CODER1 fill:#87CEEB,stroke:#4682B4,color:#000
+    style CODER2 fill:#87CEEB,stroke:#4682B4,color:#000
+    style ANALYST fill:#87CEEB,stroke:#4682B4,color:#000
+    
+    style SECURITY fill:#FFB6C1,stroke:#DC143C,color:#000
+    style TESTER fill:#90EE90,stroke:#228B22,color:#000
+    style PERF fill:#FFA07A,stroke:#FF6347,color:#000
+    
+    style MIGRATOR fill:#B0E0E6,stroke:#4682B4,color:#000
+    style CICD fill:#B0E0E6,stroke:#4682B4,color:#000
+    
+    style MAIN_DB fill:#2E86AB,stroke:#2E86AB,color:#fff
+    style EDGE_US fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    style EDGE_EU fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    style EDGE_ASIA fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    style EDGE_BR fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    
+    style AUTH fill:#F78C6B,stroke:#EF476F,color:#fff
+    style PRODUCTS fill:#F78C6B,stroke:#EF476F,color:#fff
+    style ORDERS fill:#F78C6B,stroke:#EF476F,color:#fff
+    style INVENTORY fill:#F78C6B,stroke:#EF476F,color:#fff
+    style ANALYTICS fill:#F78C6B,stroke:#EF476F,color:#fff

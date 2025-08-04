@@ -1,0 +1,79 @@
+graph TB
+    subgraph "User Regions"
+        US[🇺🇸 US Users]
+        EU[🇪🇺 EU Users]
+        ASIA[🇯🇵 Asia Users]
+        BR[🇧🇷 Brazil Users]
+    end
+
+    subgraph "Claude Flow Swarm"
+        ORCHESTRATOR[Task Orchestrator]
+        DATA_ANALYST[Data Analyst Agent]
+        PERF[Performance Analyzer]
+        MIGRATOR[Migration Specialist]
+        SECURITY[Security Auditor]
+        
+        ORCHESTRATOR -.->|coordinates| DATA_ANALYST
+        ORCHESTRATOR -.->|coordinates| PERF
+        ORCHESTRATOR -.->|coordinates| MIGRATOR
+        ORCHESTRATOR -.->|coordinates| SECURITY
+    end
+
+    subgraph "Turso Edge Network"
+        MAIN[(Primary DB<br/>Main Region)]
+        EDGE_US[(Edge US<br/>12ms latency)]
+        EDGE_EU[(Edge EU<br/>18ms latency)]
+        EDGE_ASIA[(Edge Asia<br/>25ms latency)]
+        EDGE_BR[(Edge Brazil<br/>58ms latency)]
+        
+        MAIN <==>|CRDT Sync| EDGE_US
+        MAIN <==>|CRDT Sync| EDGE_EU
+        MAIN <==>|CRDT Sync| EDGE_ASIA
+        MAIN <==>|CRDT Sync| EDGE_BR
+    end
+
+    subgraph "Intelligent Routing"
+        ROUTER{Query Router<br/>AI-Powered}
+    end
+
+    US -->|Query| ROUTER
+    EU -->|Query| ROUTER
+    ASIA -->|Query| ROUTER
+    BR -->|Query| ROUTER
+
+    ROUTER -->|Route by location| EDGE_US
+    ROUTER -->|Route by location| EDGE_EU
+    ROUTER -->|Route by location| EDGE_ASIA
+    ROUTER -->|Route by location| EDGE_BR
+
+    PERF -->|Optimize| ROUTER
+    DATA_ANALYST -->|Analyze patterns| ROUTER
+
+    subgraph "Monitoring & Alerts"
+        METRICS[Real-time Metrics<br/>• Latency: 12-58ms<br/>• Throughput: 315K ops/s<br/>• Uptime: 99.99%]
+        ALERTS[Alert System<br/>• Slack<br/>• PagerDuty<br/>• Email]
+    end
+
+    EDGE_US -->|metrics| METRICS
+    EDGE_EU -->|metrics| METRICS
+    EDGE_ASIA -->|metrics| METRICS
+    EDGE_BR -->|metrics| METRICS
+
+    METRICS -->|threshold breach| ALERTS
+    SECURITY -->|monitor| METRICS
+
+    style MAIN fill:#2E86AB,stroke:#2E86AB,color:#fff
+    style EDGE_US fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    style EDGE_EU fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    style EDGE_ASIA fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    style EDGE_BR fill:#5EB1BF,stroke:#5EB1BF,color:#fff
+    
+    style ORCHESTRATOR fill:#EF476F,stroke:#EF476F,color:#fff
+    style DATA_ANALYST fill:#F78C6B,stroke:#F78C6B,color:#fff
+    style PERF fill:#F78C6B,stroke:#F78C6B,color:#fff
+    style MIGRATOR fill:#F78C6B,stroke:#F78C6B,color:#fff
+    style SECURITY fill:#F78C6B,stroke:#F78C6B,color:#fff
+    
+    style ROUTER fill:#06D6A0,stroke:#06D6A0,color:#fff
+    style METRICS fill:#FFD166,stroke:#FFD166,color:#333
+    style ALERTS fill:#EF476F,stroke:#EF476F,color:#fff

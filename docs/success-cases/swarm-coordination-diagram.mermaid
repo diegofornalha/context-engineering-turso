@@ -1,0 +1,117 @@
+graph TB
+    subgraph "Swarm Hierarchy"
+        QUEEN[👑 Task Orchestrator<br/>Queen Agent]
+        
+        subgraph "Architects Layer"
+            ARCH1[🏛️ System Architect]
+            ARCH2[📐 API Designer]
+        end
+        
+        subgraph "Development Layer"
+            DEV1[💻 Backend Dev 1]
+            DEV2[💻 Backend Dev 2]
+            DEV3[📱 Mobile Dev]
+            DEV4[🎨 Frontend Dev]
+        end
+        
+        subgraph "Quality Layer"
+            TEST1[🧪 Test Generator]
+            TEST2[🔍 Integration Tester]
+            SEC[🔒 Security Auditor]
+            PERF[⚡ Performance Analyzer]
+        end
+        
+        subgraph "Operations Layer"
+            CICD[🔄 CI/CD Engineer]
+            MIGR[🚀 Migration Specialist]
+            MONITOR[📊 Monitoring Agent]
+        end
+    end
+    
+    subgraph "Communication Protocols"
+        GOSSIP[Gossip Protocol]
+        BYZANTINE[Byzantine Consensus]
+        RAFT[Raft Leader Election]
+    end
+    
+    subgraph "Shared Resources"
+        MEMORY[(Distributed Memory<br/>Redis Cluster)]
+        QUEUE[(Task Queue<br/>RabbitMQ)]
+        METRICS[(Metrics Store<br/>Prometheus)]
+    end
+    
+    %% Queen connections
+    QUEEN -->|coordinates| ARCH1
+    QUEEN -->|coordinates| ARCH2
+    QUEEN -->|assigns tasks| DEV1
+    QUEEN -->|assigns tasks| DEV2
+    QUEEN -->|assigns tasks| DEV3
+    QUEEN -->|assigns tasks| DEV4
+    
+    %% Architecture to Development
+    ARCH1 -.->|design specs| DEV1
+    ARCH1 -.->|design specs| DEV2
+    ARCH2 -.->|API specs| DEV3
+    ARCH2 -.->|API specs| DEV4
+    
+    %% Development to Quality
+    DEV1 -->|code| TEST1
+    DEV2 -->|code| TEST1
+    DEV3 -->|code| TEST2
+    DEV4 -->|code| TEST2
+    
+    TEST1 -->|results| SEC
+    TEST2 -->|results| SEC
+    SEC -->|security report| PERF
+    
+    %% Quality to Operations
+    PERF -->|validated code| CICD
+    CICD -->|deploy| MIGR
+    MIGR -->|status| MONITOR
+    
+    %% Communication flows
+    QUEEN -.->|broadcast| GOSSIP
+    GOSSIP -.->|propagate| DEV1
+    GOSSIP -.->|propagate| DEV2
+    
+    SEC -.->|critical decision| BYZANTINE
+    BYZANTINE -.->|consensus| QUEEN
+    
+    MONITOR -.->|election| RAFT
+    RAFT -.->|new leader| QUEEN
+    
+    %% Shared resource access
+    DEV1 <-->|read/write| MEMORY
+    DEV2 <-->|read/write| MEMORY
+    TEST1 <-->|read/write| MEMORY
+    
+    QUEEN <-->|dispatch| QUEUE
+    DEV1 <-->|consume| QUEUE
+    DEV2 <-->|consume| QUEUE
+    
+    MONITOR -->|export| METRICS
+    PERF -->|export| METRICS
+    
+    %% Styling
+    style QUEEN fill:#FFD700,stroke:#FFD700,color:#000
+    style ARCH1 fill:#9370DB,stroke:#9370DB,color:#fff
+    style ARCH2 fill:#9370DB,stroke:#9370DB,color:#fff
+    style DEV1 fill:#4169E1,stroke:#4169E1,color:#fff
+    style DEV2 fill:#4169E1,stroke:#4169E1,color:#fff
+    style DEV3 fill:#4169E1,stroke:#4169E1,color:#fff
+    style DEV4 fill:#4169E1,stroke:#4169E1,color:#fff
+    style TEST1 fill:#32CD32,stroke:#32CD32,color:#fff
+    style TEST2 fill:#32CD32,stroke:#32CD32,color:#fff
+    style SEC fill:#DC143C,stroke:#DC143C,color:#fff
+    style PERF fill:#FF8C00,stroke:#FF8C00,color:#fff
+    style CICD fill:#1E90FF,stroke:#1E90FF,color:#fff
+    style MIGR fill:#1E90FF,stroke:#1E90FF,color:#fff
+    style MONITOR fill:#1E90FF,stroke:#1E90FF,color:#fff
+    
+    style MEMORY fill:#FF6347,stroke:#FF6347,color:#fff
+    style QUEUE fill:#FF6347,stroke:#FF6347,color:#fff
+    style METRICS fill:#FF6347,stroke:#FF6347,color:#fff
+    
+    style GOSSIP fill:#DDA0DD,stroke:#DDA0DD,color:#000
+    style BYZANTINE fill:#DDA0DD,stroke:#DDA0DD,color:#000
+    style RAFT fill:#DDA0DD,stroke:#DDA0DD,color:#000
