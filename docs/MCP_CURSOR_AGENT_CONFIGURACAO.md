@@ -2,9 +2,9 @@
 
 ## 📋 Resumo
 
-Este documento descreve como configurar, atualizar e gerenciar servidores MCP (Model Context Protocol) no Cursor Agent, incluindo o processo de migração entre diferentes versões de servidores.
+Este documento descreve como configurar e gerenciar servidores MCP (Model Context Protocol) no Cursor Agent, especificamente para o servidor MCP Turso unificado com 6 tools essenciais.
 
-## 🔧 Configuração Básica
+## 🔧 Configuração Atual
 
 ### Arquivo de Configuração
 O Cursor Agent usa o arquivo `.cursor/mcp.json` para configurar servidores MCP:
@@ -15,7 +15,7 @@ O Cursor Agent usa o arquivo `.cursor/mcp.json` para configurar servidores MCP:
     "turso": {
       "type": "stdio",
       "command": "node",
-      "args": ["./mcp-turso/dist/index.js"],
+      "args": ["./mcp-turso/dist/index-unified-simple.js"],
       "env": {
         "TURSO_API_TOKEN": "seu_token_aqui",
         "TURSO_AUTH_TOKEN": "seu_auth_token_aqui",
@@ -27,92 +27,52 @@ O Cursor Agent usa o arquivo `.cursor/mcp.json` para configurar servidores MCP:
 }
 ```
 
-## 🔄 Processo de Atualização de Servidor
+## 🛠️ Tools Disponíveis (Servidor Unificado)
 
-### Cenário: Migração de Servidor Antigo para Unificado
+O servidor MCP Turso unificado oferece **6 tools essenciais** focadas em operações de banco de dados:
 
-**Problema Identificado:**
-- Servidor antigo: 10 tools (incluindo conversation/knowledge)
-- Servidor unificado: 6 tools essenciais (foco em banco de dados)
-- Cursor Agent ainda mostrava "10 tools enabled" mesmo após unificação
+1. **`list_databases`** - Lista todos os bancos de dados disponíveis
+2. **`get_database_info`** - Obtém informações detalhadas do banco
+3. **`list_tables`** - Lista todas as tabelas no banco de dados
+4. **`describe_table`** - Mostra o schema de uma tabela específica
+5. **`execute_read_only_query`** - Executa consultas de leitura (SELECT, PRAGMA, EXPLAIN)
+6. **`execute_query`** - Executa qualquer consulta SQL (INSERT, UPDATE, DELETE, etc.)
 
-**Solução Implementada:**
+## 🔍 Como Verificar Status
 
-1. **Identificar o servidor atual:**
-   ```json
-   "args": ["./mcp-turso/dist/index.js"]
-   ```
+### 1. Interface do Cursor Agent
+- Avatar do servidor com indicador verde
+- Texto "6 tools enabled"
+- Status: ✓ Connected
 
-2. **Atualizar para o servidor unificado:**
-   ```json
-   "args": ["./mcp-turso/dist/index-unified-simple.js"]
-   ```
+### 2. Teste de Funcionalidade
+```python
+# Teste básico - listar bancos
+mcp_turso_turso_list_databases()
 
-3. **Manter as variáveis de ambiente:**
-   ```json
-   "env": {
-     "TURSO_API_TOKEN": "...",
-     "TURSO_AUTH_TOKEN": "...",
-     "TURSO_ORGANIZATION": "diegofornalha",
-     "TURSO_DEFAULT_DATABASE": "context-memory"
-   }
-   ```
+# Teste de query simples
+mcp_turso_turso_execute_read_only_query("SELECT 1")
 
-## 🛠️ Tools Disponíveis por Versão
+# Teste de listagem de tabelas
+mcp_turso_turso_execute_read_only_query("SELECT name FROM sqlite_master WHERE type='table'")
+```
 
-### Servidor Antigo (10 tools)
-1. `turso_list_databases`
-2. `turso_execute_query`
-3. `turso_execute_read_only_query`
-4. `turso_list_tables`
-5. `turso_describe_table`
-6. `turso_add_conversation` ⚠️ (problemático)
-7. `turso_get_conversations`
-8. `turso_add_knowledge`
-9. `turso_search_knowledge` ⚠️ (schema inconsistente)
-10. `turso_setup_memory_tables`
+### 3. Verificar Configuração Atual
+```bash
+cat .cursor/mcp.json
+```
 
-### Servidor Unificado (6 tools)
-1. `list_databases`
-2. `get_database_info`
-3. `list_tables`
-4. `describe_table`
-5. `execute_read_only_query`
-6. `execute_query`
-
-## 🔍 Diagnóstico de Problemas
-
-### Como Verificar Qual Servidor Está Ativo
-
-1. **Verificar o arquivo de configuração:**
-   ```bash
-   cat .cursor/mcp.json
-   ```
-
-2. **Testar tools específicas:**
-   ```python
-   # Se estas tools funcionam, está usando servidor antigo
-   mcp_turso_turso_add_conversation()
-   mcp_turso_turso_search_knowledge()
-   
-   # Se estas tools funcionam, está usando servidor unificado
-   mcp_turso_turso_get_database_info()
-   ```
-
-3. **Verificar contagem de tools na interface:**
-   - Antigo: "10 tools enabled"
-   - Unificado: "6 tools enabled"
-
-## 🚀 Processo de Atualização
+## 🚀 Processo de Configuração
 
 ### Passo a Passo
 
-1. **Fazer backup da configuração atual:**
+1. **Criar/editar o arquivo de configuração:**
    ```bash
-   cp .cursor/mcp.json .cursor/mcp.json.backup
+   mkdir -p .cursor
+   nano .cursor/mcp.json
    ```
 
-2. **Editar o arquivo de configuração:**
+2. **Adicionar configuração do servidor:**
    ```json
    {
      "mcpServers": {
@@ -121,7 +81,10 @@ O Cursor Agent usa o arquivo `.cursor/mcp.json` para configurar servidores MCP:
          "command": "node",
          "args": ["./mcp-turso/dist/index-unified-simple.js"],
          "env": {
-           // manter as mesmas variáveis de ambiente
+           "TURSO_API_TOKEN": "seu_token_aqui",
+           "TURSO_AUTH_TOKEN": "seu_auth_token_aqui",
+           "TURSO_ORGANIZATION": "diegofornalha",
+           "TURSO_DEFAULT_DATABASE": "context-memory"
          }
        }
      }
@@ -132,53 +95,47 @@ O Cursor Agent usa o arquivo `.cursor/mcp.json` para configurar servidores MCP:
    - Fechar e abrir novamente o Cursor
    - Ou recarregar a janela (Cmd+Shift+P → "Developer: Reload Window")
 
-4. **Verificar a atualização:**
+4. **Verificar a conexão:**
    - Interface deve mostrar "6 tools enabled"
-   - Testar as novas tools disponíveis
+   - Testar as tools disponíveis
 
-## ⚠️ Problemas Comuns
+## ⚠️ Troubleshooting
 
-### 1. Servidor Não Atualiza
-**Sintoma:** Interface ainda mostra tools antigas
-**Solução:** 
-- Verificar se o arquivo foi salvo corretamente
-- Reiniciar completamente o Cursor Agent
-- Verificar se o arquivo `index-unified-simple.js` existe
-
-### 2. Erro de Conectividade
+### 1. Servidor Não Conecta
 **Sintoma:** "Failed to connect" ou "Connection refused"
-**Solução:**
+**Soluções:**
 - Verificar se o Node.js está instalado
 - Verificar se as variáveis de ambiente estão corretas
-- Verificar se o arquivo do servidor existe no caminho especificado
+- Verificar se o arquivo `index-unified-simple.js` existe
 
-### 3. Tools Não Funcionam
+### 2. Tools Não Funcionam
 **Sintoma:** Tools aparecem mas retornam erro
-**Solução:**
+**Soluções:**
 - Verificar logs do servidor MCP
 - Verificar se o banco de dados está acessível
 - Verificar se os tokens de autenticação são válidos
 
+### 3. Configuração Não Atualiza
+**Sintoma:** Interface ainda mostra configuração antiga
+**Soluções:**
+- Verificar se o arquivo foi salvo corretamente
+- Reiniciar completamente o Cursor Agent
+- Verificar se o arquivo `index-unified-simple.js` existe
+
 ## 📊 Monitoramento
 
-### Como Verificar Status
+### Logs do Servidor
+- Verificar saída no terminal do Cursor
+- Verificar arquivos de log do servidor MCP
 
-1. **Interface do Cursor:**
-   - Avatar do servidor com indicador verde
-   - Texto "X tools enabled"
-
-2. **Teste de Funcionalidade:**
-   ```python
-   # Teste básico
-   mcp_turso_turso_list_databases()
-   
-   # Teste de query
-   mcp_turso_turso_execute_read_only_query("SELECT 1")
-   ```
-
-3. **Logs do Servidor:**
-   - Verificar saída no terminal do Cursor
-   - Verificar arquivos de log do servidor MCP
+### Testes de Funcionalidade
+```python
+# Teste completo das 6 tools
+mcp_turso_turso_list_databases()  # 1. Listar bancos
+mcp_turso_turso_execute_read_only_query("SELECT name FROM sqlite_master WHERE type='table'")  # 2. Listar tabelas
+mcp_turso_turso_execute_read_only_query("SELECT COUNT(*) FROM docs_turso")  # 3. Contagem
+mcp_turso_turso_execute_query("INSERT INTO docs_turso (file_name, title, content) VALUES ('teste.md', 'Teste', 'Conteúdo')")  # 4. Inserção
+```
 
 ## 🎯 Melhores Práticas
 
@@ -193,21 +150,10 @@ O Cursor Agent usa o arquivo `.cursor/mcp.json` para configurar servidores MCP:
 ```json
 {
   "mcpServers": {
-    "turso-unified": {
+    "turso": {
       "type": "stdio",
       "command": "node",
       "args": ["./mcp-turso/dist/index-unified-simple.js"],
-      "env": {
-        "TURSO_API_TOKEN": "eyJhbGciOiJSUzI1NiIs...",
-        "TURSO_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIs...",
-        "TURSO_ORGANIZATION": "diegofornalha",
-        "TURSO_DEFAULT_DATABASE": "context-memory"
-      }
-    },
-    "turso-legacy": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./mcp-turso/dist/index.js"],
       "env": {
         "TURSO_API_TOKEN": "eyJhbGciOiJSUzI1NiIs...",
         "TURSO_AUTH_TOKEN": "eyJhbGciOiJFZERTQSIs...",
@@ -219,9 +165,25 @@ O Cursor Agent usa o arquivo `.cursor/mcp.json` para configurar servidores MCP:
 }
 ```
 
+## 🔄 Atualizações Futuras
+
+Para atualizar o servidor MCP no futuro:
+
+1. **Fazer backup da configuração atual:**
+   ```bash
+   cp .cursor/mcp.json .cursor/mcp.json.backup
+   ```
+
+2. **Atualizar o arquivo de configuração** com o novo servidor
+
+3. **Reiniciar o Cursor Agent**
+
+4. **Testar as novas funcionalidades**
+
 ---
 
 **Data da Documentação:** 04/08/2025  
 **Versão:** 1.0  
 **Status:** ✅ Atualizado e testado  
-**Ambiente:** Cursor Agent + MCP Turso Unificado 
+**Ambiente:** Cursor Agent + MCP Turso Unificado (6 tools)  
+**Servidor:** index-unified-simple.js 
