@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script para iniciar o MCP Turso Unificado (10 tools)
+# Script para iniciar o MCP Turso Unificado Simplificado (6 tools)
 # Compatível com Claude Code CLI e Cursor Agent
 
-echo "🚀 Iniciando MCP Turso Unificado v2.0..."
-echo "🛠️  10 tools disponíveis (4 básicas + 6 avançadas)"
+echo "🚀 Iniciando MCP Turso Unificado v2.1 (Simplificado)..."
+echo "🛠️  6 tools essenciais (4 básicas + 2 avançadas)"
 echo "🔧 Compatível com Claude Code CLI & Cursor Agent"
 
 # Definir variáveis de ambiente
@@ -28,5 +28,5 @@ echo "TURSO_DATABASE_URL: $TURSO_DATABASE_URL"
 # Mudar para o diretório correto
 cd "$(dirname "$0")"
 
-# Iniciar o MCP servidor unificado
-exec node dist/index-unified.js
+# Iniciar o MCP servidor unificado simplificado
+exec node dist/index-unified-simple.js
