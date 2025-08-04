@@ -47,6 +47,15 @@ def escape_sql_string(s):
     # Duplica aspas simples para escape SQL
     return s.replace("'", "''")
 
+def generate_cleanup_sql():
+    """Gera comando SQL para limpar a tabela docs_turso"""
+    return """
+-- Limpeza da tabela docs_turso antes de inserir novos documentos
+DELETE FROM docs_turso;
+-- Reset do auto-increment
+DELETE FROM sqlite_sequence WHERE name='docs_turso';
+"""
+
 def insert_document(file_path, base_dir):
     """Gera comando SQL para inserir um documento"""
     try:
@@ -86,30 +95,36 @@ VALUES (
         return None
 
 def main():
-    base_dir = "/Users/agents/Desktop/context-engineering-turso/docs-turso"
+    # O diretório base é o diretório onde o script está localizado
+    base_dir = Path(__file__).parent.resolve()
     sql_commands = []
+    
+    # Adiciona comando de limpeza no início
+    sql_commands.append(generate_cleanup_sql())
     
     # Percorre todos os arquivos .md no diretório e subdiretórios
     for root, dirs, files in os.walk(base_dir):
         for file in files:
             if file.endswith('.md'):
                 file_path = os.path.join(root, file)
-                sql = insert_document(file_path, base_dir)
+                sql = insert_document(file_path, str(base_dir))
                 if sql:
                     sql_commands.append(sql)
     
-    # Salva todos os comandos SQL em um arquivo
-    output_file = os.path.join(base_dir, 'insert_all_docs_complete.sql')
+    # Salva todos os comandos SQL em um arquivo no mesmo diretório do script
+    output_file = base_dir / 'insert_all_docs_complete.sql'
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write("-- Script gerado automaticamente para inserir todos os documentos .md\n")
-        f.write("-- Total de documentos: {}\n\n".format(len(sql_commands)))
+        f.write("-- Total de documentos: {}\n".format(len(sql_commands) - 1))  # -1 para excluir o comando de limpeza
+        f.write("-- Inclui limpeza automática da tabela para evitar duplicatas\n\n")
         
         for sql in sql_commands:
             f.write(sql)
             f.write("\n")
     
     print(f"Script SQL gerado: {output_file}")
-    print(f"Total de documentos a inserir: {len(sql_commands)}")
+    print(f"Total de documentos a inserir: {len(sql_commands) - 1}")
+    print("✅ Inclui limpeza automática para evitar duplicatas")
     
     # Executa automaticamente
     print("\nExecutando script SQL...")
@@ -117,6 +132,7 @@ def main():
         cmd = f'turso db shell context-memory < {output_file}'
         subprocess.run(cmd, shell=True, check=True)
         print("✅ Documentos inseridos com sucesso!")
+        print("✅ Tabela limpa e recriada sem duplicatas")
     except subprocess.CalledProcessError as e:
         print(f"❌ Erro ao executar: {e}")
 
