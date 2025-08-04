@@ -334,11 +334,13 @@ class UnifiedTursoServer {
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
                 metadata TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_session_id (session_id),
-                INDEX idx_timestamp (timestamp)
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
               )
             `);
+            
+            // Criar índices para conversations
+            await client.execute(`CREATE INDEX IF NOT EXISTS idx_session_id ON conversations(session_id)`);
+            await client.execute(`CREATE INDEX IF NOT EXISTS idx_timestamp ON conversations(timestamp)`);
             
             // Criar tabela knowledge_base
             await client.execute(`
@@ -350,11 +352,13 @@ class UnifiedTursoServer {
                 tags TEXT,
                 metadata TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_category (category),
-                INDEX idx_topic (topic)
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
               )
             `);
+            
+            // Criar índices para knowledge_base
+            await client.execute(`CREATE INDEX IF NOT EXISTS idx_category ON knowledge_base(category)`);
+            await client.execute(`CREATE INDEX IF NOT EXISTS idx_topic ON knowledge_base(topic)`);
             
             return { 
               content: [{ 
