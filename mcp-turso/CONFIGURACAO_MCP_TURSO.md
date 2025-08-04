@@ -85,6 +85,24 @@ Se o servidor falhar:
 
 O **Claude Code** é a CLI oficial da Anthropic que permite usar o Claude em ambiente de desenvolvimento. O MCP (Model Context Protocol) é um protocolo aberto que permite ao Claude Code conectar-se a ferramentas e fontes de dados externas de forma segura.
 
+### ⚠️ Importante: Diferença entre Claude Code e Cursor Agent
+
+**Claude Code (CLI)** e **Cursor Agent** são ferramentas diferentes:
+
+- **Claude Code**: CLI oficial da Anthropic (`claude` no terminal)
+  - Interface de linha de comando
+  - Usa o arquivo de configuração `~/.claude/settings.json`
+  - Suporta MCP nativamente
+  - Comando de configuração: `claude mcp add`
+
+- **Cursor Agent**: IDE Cursor com integração do Claude
+  - Interface gráfica (IDE)
+  - Usa configuração própria do Cursor
+  - Integração via API da Anthropic
+  - Também suporta MCP, mas com configuração diferente
+
+**Esta documentação é específica para o Claude Code CLI**, não para o Cursor Agent.
+
 Esta configuração específica permite que o Claude Code:
 - Conecte-se diretamente aos bancos de dados Turso
 - Execute consultas SQL através do chat
