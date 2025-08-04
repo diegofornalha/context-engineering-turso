@@ -71,6 +71,7 @@ export async function list_tables(
             WHERE type = 'table' 
             AND name NOT LIKE 'sqlite_%'
             ORDER BY name`,
+            args: {},
 		});
 
 		// Extract table names from the result
@@ -145,6 +146,7 @@ export async function describe_table(
 		// Query the table info
 		const result = await client.execute({
 			sql: `PRAGMA table_info(${table_name})`,
+			args: {},
 		});
 
 		// Return the column definitions
