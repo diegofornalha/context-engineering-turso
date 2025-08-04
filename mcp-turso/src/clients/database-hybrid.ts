@@ -14,9 +14,14 @@ export class CloudDatabaseClient {
 	private get_cloud_client(): Client {
 		if (!this.cloud_client) {
 			const config = get_cloud_config();
+			// Use TURSO_AUTH_TOKEN from environment for database access
+			const authToken = process.env.TURSO_AUTH_TOKEN;
+			if (!authToken) {
+				throw new Error('TURSO_AUTH_TOKEN is required for database access');
+			}
 			this.cloud_client = createClient({
 				url: `https://${config.TURSO_DEFAULT_DATABASE}-${config.TURSO_ORGANIZATION}.aws-us-east-1.turso.io`,
-				authToken: config.TURSO_API_TOKEN,
+				authToken: authToken,
 			});
 		}
 		return this.cloud_client;
