@@ -22,4 +22,4 @@ echo "TURSO_DEFAULT_DATABASE: $TURSO_DEFAULT_DATABASE"
 cd "$(dirname "$0")"
 
 # Iniciar o MCP diretamente
-exec node dist/index.js 
+exec node dist/index-hybrid.js 

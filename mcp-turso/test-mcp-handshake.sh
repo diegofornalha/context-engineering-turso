@@ -12,7 +12,7 @@ echo "Request: $INIT_MSG"
 echo "---"
 
 # Enviar para o servidor e capturar resposta
-RESPONSE=$(echo "$INIT_MSG" | /Users/agents/Desktop/context-engineering-turso/mcp-turso/start-mcp-stdio.sh 2>/tmp/mcp-test-stderr.log)
+RESPONSE=$(echo "$INIT_MSG" | /Users/agents/Desktop/claude-20x/agents-a2a/.conductor/kinshasa/context-engineering-turso/mcp-turso/start-mcp-stdio.sh 2>/tmp/mcp-test-stderr.log)
 
 echo "Response: $RESPONSE"
 echo "---"
@@ -25,4 +25,4 @@ LIST_TOOLS='{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}'
 echo "Request: $LIST_TOOLS"
 
 # Enviar ambas mensagens em sequência
-(echo "$INIT_MSG"; sleep 0.1; echo "$LIST_TOOLS") | /Users/agents/Desktop/context-engineering-turso/mcp-turso/start-mcp-stdio.sh
+(echo "$INIT_MSG"; sleep 0.1; echo "$LIST_TOOLS") | /Users/agents/Desktop/claude-20x/agents-a2a/.conductor/kinshasa/context-engineering-turso/mcp-turso/start-mcp-stdio.sh

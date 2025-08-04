@@ -10,8 +10,8 @@ from pathlib import Path
 # Adicionar o diretório pai ao path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from turso_agent.config.turso_settings import TursoSettings
-from turso_agent.tools.mcp_integrator import MCPTursoIntegrator
+from config.turso_settings import TursoSettings
+from tools.mcp_integrator import MCPTursoIntegrator
 
 async def test_mcp_integration():
     """Testa a integração MCP"""
@@ -107,11 +107,15 @@ async def test_simple_agent():
         print(f"\n❌ **ERRO NO AGENTE:** {str(e)}")
         return False
 
+import time
+
 async def main():
     """Função principal"""
     
     print("🚀 **INICIANDO TESTES MCP INTEGRATION**")
     print("="*60)
+    
+    time.sleep(5)  # Adicionar um atraso de 5 segundos
     
     # Teste 1: MCP Integration
     success1 = await test_mcp_integration()
