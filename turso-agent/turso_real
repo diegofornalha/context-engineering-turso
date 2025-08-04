@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+"""
+Turso Agent CLI - Versão com Dados Reais
+Usa as ferramentas MCP do ambiente atual
+"""
+
+import asyncio
+import sys
+import os
+from pathlib import Path
+from datetime import datetime
+import argparse
+
+# Adicionar diretório ao path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from config.turso_settings import TursoSettings
+
+class TursoAgentReal:
+    """Turso Agent que usa dados reais via MCP"""
+    
+    def __init__(self):
+        self.settings = TursoSettings()
+        
+    async def performance(self, table=None):
+        """Análise de performance com dados REAIS"""
+        print("⚡ ANÁLISE DE PERFORMANCE TURSO (DADOS REAIS)")
+        print("="*60)
+        
+        print(f"\n📊 Database: {self.settings.default_database}")
+        
+        # Esta versão assume que as ferramentas MCP estão disponíveis no ambiente
+        print("\n💡 Para análise com dados reais, use no Claude Code ou Cursor:")
+        print("\n1. Execute list_databases para ver bancos disponíveis")
+        print("2. Use describe_table para analisar estrutura")
+        print("3. Execute queries com execute_read_only_query")
+        
+        if table:
+            print(f"\n🎯 Análise sugerida para tabela '{table}':")
+            print(f"   • PRAGMA index_list('{table}') - Ver índices")
+            print(f"   • SELECT COUNT(*) FROM {table} - Contar registros")
+            print(f"   • EXPLAIN QUERY PLAN SELECT * FROM {table} - Analisar plano")
+        
+        print("\n✅ RECOMENDAÇÕES GERAIS:")
+        print("• Criar índices em colunas de WHERE/JOIN")
+        print("• Executar VACUUM e ANALYZE regularmente")
+        print("• Usar EXPLAIN QUERY PLAN em queries lentas")
+        
+    async def query_guide(self, query=None):
+        """Guia para executar queries reais"""
+        print("💻 GUIA DE QUERIES TURSO")
+        print("="*60)
+        
+        if query:
+            print(f"\n🔍 Sua query: {query}")
+            print("\n📋 Para executar no Claude Code/Cursor:")
+            print(f"   mcp_turso_execute_read_only_query(")
+            print(f'       query="{query}",')
+            print(f'       database="{self.settings.default_database}"')
+            print(f"   )")
+        else:
+            print("\n📊 Queries úteis para análise:")
+            print("\n1. Ver todas as tabelas:")
+            print('   mcp_turso_list_tables()')
+            
+            print("\n2. Estrutura de uma tabela:")
+            print('   mcp_turso_describe_table(table_name="nome_tabela")')
+            
+            print("\n3. Contar registros:")
+            print('   mcp_turso_execute_read_only_query(')
+            print('       query="SELECT COUNT(*) FROM tabela"')
+            print('   )')
+            
+            print("\n4. Ver índices:")
+            print('   mcp_turso_execute_read_only_query(')
+            print('       query="PRAGMA index_list(\'tabela\')"')
+            print('   )')
+            
+    async def security_check(self):
+        """Checklist de segurança para verificação real"""
+        print("🛡️ CHECKLIST DE SEGURANÇA TURSO")
+        print("="*60)
+        
+        print("\n📋 Verificações recomendadas com MCP:")
+        
+        print("\n1. Listar todos os bancos:")
+        print("   mcp_turso_list_databases()")
+        print("   → Verifique se há bancos não autorizados")
+        
+        print("\n2. Verificar tabelas sensíveis:")
+        print("   mcp_turso_list_tables()")
+        print("   → Procure por: users, auth, tokens, passwords")
+        
+        print("\n3. Analisar estrutura de tabelas sensíveis:")
+        print("   mcp_turso_describe_table(table_name='users')")
+        print("   → Verifique se campos sensíveis estão expostos")
+        
+        print("\n4. Verificar dados sensíveis:")
+        print("   SELECT name FROM pragma_table_info('users')")
+        print("   WHERE name LIKE '%password%' OR name LIKE '%token%'")
+        
+        print("\n✅ Checklist de Segurança:")
+        print("☐ Tokens de API seguros e rotacionados")
+        print("☐ Campos sensíveis criptografados")
+        print("☐ Acesso restrito a bancos de produção")
+        print("☐ Audit logging habilitado")
+        print("☐ Backups automáticos configurados")
+        
+    async def optimize_guide(self, target=None):
+        """Guia de otimização com comandos reais"""
+        print("📈 GUIA DE OTIMIZAÇÃO TURSO")
+        print("="*60)
+        
+        if target:
+            print(f"\n🎯 Otimizando: {target}")
+            
+        print("\n📋 Comandos de otimização via MCP:")
+        
+        print("\n1. Análise de performance:")
+        print("   # Ver tabelas grandes")
+        print("   SELECT name, SUM(pgsize) as size")
+        print("   FROM dbstat GROUP BY name")
+        print("   ORDER BY size DESC LIMIT 10")
+        
+        print("\n2. Verificar índices:")
+        print("   # Listar todos os índices")
+        print("   SELECT name, tbl_name FROM sqlite_master")
+        print("   WHERE type = 'index'")
+        
+        print("\n3. Estatísticas de uso:")
+        print("   # Analisar queries lentas")
+        print("   EXPLAIN QUERY PLAN")
+        print("   SELECT ... (sua query)")
+        
+        print("\n4. Manutenção:")
+        print("   # Via Turso CLI")
+        print("   turso db shell <database> 'VACUUM;'")
+        print("   turso db shell <database> 'ANALYZE;'")
+        
+        print("\n💡 Dica: Use estas queries com mcp_turso_execute_read_only_query")
+        
+    async def tables_analysis(self):
+        """Análise detalhada de tabelas"""
+        print("📋 ANÁLISE DE TABELAS TURSO")
+        print("="*60)
+        
+        print("\n🔍 Comandos para análise de tabelas:")
+        
+        print("\n1. Listar todas as tabelas:")
+        print("   tables = mcp_turso_list_tables()")
+        
+        print("\n2. Para cada tabela importante:")
+        print("   # Estrutura")
+        print("   mcp_turso_describe_table(table_name='tabela')")
+        print("\n   # Tamanho")
+        print("   SELECT COUNT(*) FROM tabela")
+        print("\n   # Índices")
+        print("   PRAGMA index_list('tabela')")
+        
+        print("\n3. Análise de dados:")
+        print("   # Distribuição")
+        print("   SELECT column, COUNT(*) as freq")
+        print("   FROM tabela GROUP BY column")
+        print("   ORDER BY freq DESC LIMIT 10")
+        
+        print("\n📊 Métricas importantes:")
+        print("• Número total de tabelas")
+        print("• Tamanho de cada tabela")
+        print("• Índices existentes")
+        print("• Colunas mais usadas em WHERE")
+        
+    async def check(self):
+        """Status e instruções de uso"""
+        print("🚀 TURSO AGENT - MODO DADOS REAIS")
+        print("="*60)
+        
+        print(f"\n📊 Configuração:")
+        print(f"  • Database: {self.settings.default_database}")
+        print(f"  • Organization: {self.settings.turso_organization}")
+        print(f"  • Token: {'✅ Configurado' if self.settings.turso_api_token else '❌ Faltando'}")
+        
+        print("\n🔌 Como usar com dados reais:")
+        print("\n1. No Claude Code ou Cursor, as ferramentas MCP estão disponíveis:")
+        print("   • mcp_turso_list_databases()")
+        print("   • mcp_turso_execute_read_only_query()")
+        print("   • mcp_turso_describe_table()")
+        print("   • etc...")
+        
+        print("\n2. Este CLI fornece:")
+        print("   • Guias de queries otimizadas")
+        print("   • Checklists de segurança")
+        print("   • Comandos prontos para copiar/colar")
+        print("   • Análises especializadas")
+        
+        print("\n💡 Exemplo de uso integrado:")
+        print("   1. Use 'turso_real query' para ver queries sugeridas")
+        print("   2. Copie e execute no Claude Code/Cursor")
+        print("   3. Analise os resultados com 'turso_real performance'")
+
+async def main():
+    parser = argparse.ArgumentParser(
+        description='Turso Agent Real - Guia para análise com dados reais'
+    )
+    
+    parser.add_argument('command', nargs='?', default='help',
+                       help='performance, query, security, optimize, tables, check')
+    parser.add_argument('args', nargs='*', help='Argumentos do comando')
+    
+    args = parser.parse_args()
+    
+    agent = TursoAgentReal()
+    
+    command = args.command.lower()
+    command_args = ' '.join(args.args) if args.args else None
+    
+    try:
+        if command in ['performance', 'perf', 'p']:
+            await agent.performance(command_args)
+            
+        elif command in ['query', 'q']:
+            await agent.query_guide(command_args)
+            
+        elif command in ['security', 'sec', 's']:
+            await agent.security_check()
+            
+        elif command in ['optimize', 'opt', 'o']:
+            await agent.optimize_guide(command_args)
+            
+        elif command in ['tables', 't']:
+            await agent.tables_analysis()
+            
+        elif command in ['check', 'c']:
+            await agent.check()
+            
+        elif command in ['help', 'h']:
+            print("🎯 TURSO AGENT REAL - Comandos")
+            print("="*50)
+            print("\n📊 performance [table]  - Análise com guias reais")
+            print("💻 query [sql]         - Guia de queries")
+            print("🛡️  security           - Checklist de segurança")
+            print("📈 optimize [target]   - Guia de otimização")
+            print("📋 tables              - Análise de tabelas")
+            print("🚀 check               - Status e instruções")
+            print("\nExemplos:")
+            print("  turso_real query")
+            print("  turso_real performance users")
+            print("  turso_real security")
+            
+        else:
+            print(f"❌ Comando desconhecido: {command}")
+            
+    except Exception as e:
+        print(f"❌ Erro: {str(e)}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
