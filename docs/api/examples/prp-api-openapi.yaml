@@ -1,0 +1,922 @@
+openapi: 3.0.0
+info:
+  title: PRP (Pull Request Partner) API
+  version: 1.0.0
+  description: |
+    The PRP API provides comprehensive endpoints for managing Pull Request Partners,
+    including authentication, CRUD operations, real-time updates, and integration with MCP Turso.
+    
+    ## Features
+    - JWT and OAuth2 authentication
+    - RESTful CRUD operations
+    - WebSocket support for real-time updates
+    - Integration with MCP (Model Context Protocol)
+    - Turso database integration
+    
+  contact:
+    name: PRP API Support
+    email: support@prp-api.dev
+    url: https://prp-api.dev/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.prp.dev/v1
+    description: Production server
+  - url: https://staging-api.prp.dev/v1
+    description: Staging server
+  - url: http://localhost:3000/v1
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: Authentication endpoints for JWT and OAuth2
+  - name: PRPs
+    description: Pull Request Partner management
+  - name: Agents
+    description: AI Agent management for PRPs
+  - name: Projects
+    description: Project management endpoints
+  - name: Monitoring
+    description: System monitoring and health checks
+  - name: WebSocket
+    description: Real-time communication endpoints
+
+paths:
+  # Authentication Endpoints
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login with credentials
+      description: Authenticate user with email and password to receive JWT token
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: SecurePassword123!
+            examples:
+              validLogin:
+                summary: Valid login request
+                value:
+                  email: developer@prp.dev
+                  password: MySecurePass123!
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              examples:
+                success:
+                  value:
+                    accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    expiresIn: 3600
+                    tokenType: Bearer
+                    user:
+                      id: usr_123456
+                      email: developer@prp.dev
+                      name: John Developer
+                      role: developer
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Use refresh token to get a new access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/oauth2/github:
+    get:
+      tags:
+        - Authentication
+      summary: GitHub OAuth2 authentication
+      description: Initiate GitHub OAuth2 authentication flow
+      operationId: githubOAuth
+      parameters:
+        - name: redirect_uri
+          in: query
+          description: URI to redirect after authentication
+          schema:
+            type: string
+            example: https://app.prp.dev/auth/callback
+      responses:
+        '302':
+          description: Redirect to GitHub OAuth
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://github.com/login/oauth/authorize?client_id=...
+
+  /auth/oauth2/callback:
+    get:
+      tags:
+        - Authentication
+      summary: OAuth2 callback
+      description: Handle OAuth2 callback from provider
+      operationId: oauthCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # PRP CRUD Endpoints
+  /prps:
+    get:
+      tags:
+        - PRPs
+      summary: List all PRPs
+      description: Retrieve a paginated list of Pull Request Partners
+      operationId: listPRPs
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          description: Filter by PRP status
+          schema:
+            type: string
+            enum: [active, inactive, pending]
+            example: active
+        - name: projectId
+          in: query
+          description: Filter by project ID
+          schema:
+            type: string
+            example: proj_123456
+      responses:
+        '200':
+          description: List of PRPs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PRP'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+              examples:
+                success:
+                  value:
+                    data:
+                      - id: prp_123456
+                        projectId: proj_123456
+                        name: Authentication System PRP
+                        description: PRP for implementing JWT authentication
+                        status: active
+                        createdAt: '2024-01-15T10:00:00Z'
+                        updatedAt: '2024-01-15T10:00:00Z'
+                    pagination:
+                      page: 1
+                      limit: 20
+                      total: 100
+                      totalPages: 5
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      tags:
+        - PRPs
+      summary: Create a new PRP
+      description: Create a new Pull Request Partner
+      operationId: createPRP
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePRP'
+            examples:
+              newPRP:
+                summary: Create authentication PRP
+                value:
+                  projectId: proj_123456
+                  name: Authentication System PRP
+                  description: Implement JWT authentication with refresh tokens
+                  requirements:
+                    - JWT token generation
+                    - Refresh token mechanism
+                    - Token validation middleware
+                  estimatedHours: 8
+                  priority: high
+      responses:
+        '201':
+          description: PRP created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PRP'
+              examples:
+                created:
+                  value:
+                    id: prp_789012
+                    projectId: proj_123456
+                    name: Authentication System PRP
+                    description: Implement JWT authentication with refresh tokens
+                    status: pending
+                    createdAt: '2024-01-15T10:00:00Z'
+                    updatedAt: '2024-01-15T10:00:00Z'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /prps/{prpId}:
+    get:
+      tags:
+        - PRPs
+      summary: Get PRP by ID
+      description: Retrieve detailed information about a specific PRP
+      operationId: getPRPById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PRPIdParam'
+      responses:
+        '200':
+          description: PRP details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PRPDetail'
+              examples:
+                detailed:
+                  value:
+                    id: prp_123456
+                    projectId: proj_123456
+                    name: Authentication System PRP
+                    description: Implement JWT authentication with refresh tokens
+                    status: active
+                    requirements:
+                      - JWT token generation
+                      - Refresh token mechanism
+                      - Token validation middleware
+                    estimatedHours: 8
+                    actualHours: 6.5
+                    priority: high
+                    assignedAgent:
+                      id: agent_001
+                      name: Auth Specialist Agent
+                      type: authentication
+                    pullRequest:
+                      id: 123
+                      url: https://github.com/org/repo/pull/123
+                      status: open
+                    createdAt: '2024-01-15T10:00:00Z'
+                    updatedAt: '2024-01-15T14:30:00Z'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - PRPs
+      summary: Update PRP
+      description: Update an existing PRP
+      operationId: updatePRP
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PRPIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePRP'
+            examples:
+              updateStatus:
+                summary: Update PRP status
+                value:
+                  status: active
+                  actualHours: 6.5
+      responses:
+        '200':
+          description: PRP updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PRP'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags:
+        - PRPs
+      summary: Delete PRP
+      description: Delete a PRP (soft delete)
+      operationId: deletePRP
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PRPIdParam'
+      responses:
+        '204':
+          description: PRP deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # WebSocket Endpoints
+  /ws/prps:
+    get:
+      tags:
+        - WebSocket
+      summary: WebSocket connection for PRP updates
+      description: |
+        Establish WebSocket connection for real-time PRP updates.
+        
+        ## Message Types:
+        - `prp.created` - New PRP created
+        - `prp.updated` - PRP updated
+        - `prp.deleted` - PRP deleted
+        - `prp.status_changed` - PRP status changed
+        
+        ## Example Connection:
+        ```javascript
+        const ws = new WebSocket('wss://api.prp.dev/v1/ws/prps');
+        
+        ws.on('message', (data) => {
+          const event = JSON.parse(data);
+          console.log('Event:', event.type, event.data);
+        });
+        
+        // Subscribe to specific project
+        ws.send(JSON.stringify({
+          action: 'subscribe',
+          projectId: 'proj_123456'
+        }));
+        ```
+      operationId: websocketPRPs
+      security:
+        - bearerAuth: []
+      responses:
+        '101':
+          description: Switching Protocols
+          headers:
+            Upgrade:
+              schema:
+                type: string
+                example: websocket
+            Connection:
+              schema:
+                type: string
+                example: Upgrade
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # Agent Management
+  /agents:
+    get:
+      tags:
+        - Agents
+      summary: List available agents
+      description: Get list of AI agents available for PRP assignment
+      operationId: listAgents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          description: Filter by agent type
+          schema:
+            type: string
+            enum: [authentication, database, frontend, backend, testing]
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+              examples:
+                agents:
+                  value:
+                    data:
+                      - id: agent_001
+                        name: Auth Specialist Agent
+                        type: authentication
+                        capabilities:
+                          - JWT implementation
+                          - OAuth2 integration
+                          - Security best practices
+                        status: available
+                      - id: agent_002
+                        name: Database Expert Agent
+                        type: database
+                        capabilities:
+                          - Schema design
+                          - Query optimization
+                          - Migration scripts
+                        status: busy
+
+  /agents/{agentId}/assign:
+    post:
+      tags:
+        - Agents
+      summary: Assign agent to PRP
+      description: Assign an AI agent to work on a specific PRP
+      operationId: assignAgent
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: agent_001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prpId
+              properties:
+                prpId:
+                  type: string
+                  example: prp_123456
+                priority:
+                  type: string
+                  enum: [low, medium, high, urgent]
+                  default: medium
+      responses:
+        '200':
+          description: Agent assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Agent assigned successfully
+                  assignment:
+                    $ref: '#/components/schemas/AgentAssignment'
+
+  # Health & Monitoring
+  /health:
+    get:
+      tags:
+        - Monitoring
+      summary: Health check
+      description: Check API health status
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  services:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                        example: connected
+                      cache:
+                        type: string
+                        example: connected
+                      mcp:
+                        type: string
+                        example: connected
+
+  /metrics:
+    get:
+      tags:
+        - Monitoring
+      summary: System metrics
+      description: Get system performance metrics
+      operationId: getMetrics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: System metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: number
+                    example: 3600
+                  requestsPerMinute:
+                    type: number
+                    example: 120
+                  activeConnections:
+                    type: number
+                    example: 45
+                  prpStats:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 1250
+                      active:
+                        type: integer
+                        example: 230
+                      completed:
+                        type: integer
+                        example: 980
+                      pending:
+                        type: integer
+                        example: 40
+
+components:
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        refreshToken:
+          type: string
+          description: JWT refresh token
+        expiresIn:
+          type: integer
+          description: Token expiration time in seconds
+        tokenType:
+          type: string
+          default: Bearer
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: usr_123456
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [developer, admin, viewer]
+
+    PRP:
+      type: object
+      properties:
+        id:
+          type: string
+          example: prp_123456
+        projectId:
+          type: string
+          example: proj_123456
+        name:
+          type: string
+          minLength: 3
+          maxLength: 200
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, active, completed, cancelled]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PRPDetail:
+      allOf:
+        - $ref: '#/components/schemas/PRP'
+        - type: object
+          properties:
+            requirements:
+              type: array
+              items:
+                type: string
+            estimatedHours:
+              type: number
+            actualHours:
+              type: number
+            assignedAgent:
+              $ref: '#/components/schemas/Agent'
+            pullRequest:
+              $ref: '#/components/schemas/PullRequest'
+            metrics:
+              $ref: '#/components/schemas/PRPMetrics'
+
+    CreatePRP:
+      type: object
+      required:
+        - projectId
+        - name
+        - description
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+          minLength: 3
+          maxLength: 200
+        description:
+          type: string
+        requirements:
+          type: array
+          items:
+            type: string
+        estimatedHours:
+          type: number
+          minimum: 0.5
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+          default: medium
+
+    UpdatePRP:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 200
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, active, completed, cancelled]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        actualHours:
+          type: number
+          minimum: 0
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [authentication, database, frontend, backend, testing, general]
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [available, busy, offline]
+
+    AgentAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+        agentId:
+          type: string
+        prpId:
+          type: string
+        assignedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [assigned, in_progress, completed]
+
+    PullRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum: [open, closed, merged]
+        createdAt:
+          type: string
+          format: date-time
+
+    PRPMetrics:
+      type: object
+      properties:
+        codeLines:
+          type: integer
+        testsAdded:
+          type: integer
+        coverage:
+          type: number
+        reviewComments:
+          type: integer
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  parameters:
+    PRPIdParam:
+      name: prpId
+      in: path
+      required: true
+      description: PRP identifier
+      schema:
+        type: string
+        example: prp_123456
+
+    PageParam:
+      name: page
+      in: query
+      description: Page number
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            unauthorized:
+              value:
+                code: UNAUTHORIZED
+                message: Authentication required
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notFound:
+              value:
+                code: NOT_FOUND
+                message: Resource not found
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            validation:
+              value:
+                code: VALIDATION_ERROR
+                message: Validation failed
+                details:
+                  field: email
+                  error: Invalid email format
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT authentication token.
+        Example: Authorization: Bearer <token>
+
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.prp.dev/oauth/authorize
+          tokenUrl: https://api.prp.dev/oauth/token
+          scopes:
+            read: Read access to PRPs
+            write: Write access to PRPs
+            admin: Administrative access

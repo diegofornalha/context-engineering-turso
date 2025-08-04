@@ -1,0 +1,417 @@
+{
+  "regions": {
+    "north_america": {
+      "us-west-1": {
+        "name": "US West (N. California)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 37.3541,
+          "longitude": -121.9552
+        },
+        "connectivity": {
+          "bandwidth_gbps": 100,
+          "peering": ["us-west-2", "us-east-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "us-west-2": {
+        "name": "US West (Oregon)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 45.5152,
+          "longitude": -122.6784
+        },
+        "connectivity": {
+          "bandwidth_gbps": 200,
+          "peering": ["us-west-1", "us-east-1", "ca-central-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true,
+          "primary": true
+        }
+      },
+      "us-east-1": {
+        "name": "US East (Virginia)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 38.7489,
+          "longitude": -77.4761
+        },
+        "connectivity": {
+          "bandwidth_gbps": 200,
+          "peering": ["us-west-2", "eu-west-1", "sa-east-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "us-east-2": {
+        "name": "US East (Ohio)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 40.4173,
+          "longitude": -82.9071
+        },
+        "connectivity": {
+          "bandwidth_gbps": 100,
+          "peering": ["us-east-1", "ca-central-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": false
+        }
+      },
+      "ca-central-1": {
+        "name": "Canada (Montreal)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 45.5017,
+          "longitude": -73.5673
+        },
+        "connectivity": {
+          "bandwidth_gbps": 50,
+          "peering": ["us-east-1", "us-east-2"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": false
+        }
+      }
+    },
+    "europe": {
+      "eu-west-1": {
+        "name": "EU West (Ireland)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 53.3498,
+          "longitude": -6.2603
+        },
+        "connectivity": {
+          "bandwidth_gbps": 150,
+          "peering": ["eu-central-1", "eu-west-2", "us-east-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "eu-west-2": {
+        "name": "EU West (London)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 51.5074,
+          "longitude": -0.1278
+        },
+        "connectivity": {
+          "bandwidth_gbps": 100,
+          "peering": ["eu-west-1", "eu-central-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "eu-central-1": {
+        "name": "EU Central (Frankfurt)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 50.1109,
+          "longitude": 8.6821
+        },
+        "connectivity": {
+          "bandwidth_gbps": 200,
+          "peering": ["eu-west-1", "eu-west-2", "eu-north-1", "ap-southeast-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "eu-north-1": {
+        "name": "EU North (Stockholm)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 59.3293,
+          "longitude": 18.0686
+        },
+        "connectivity": {
+          "bandwidth_gbps": 50,
+          "peering": ["eu-central-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": false
+        }
+      }
+    },
+    "asia_pacific": {
+      "ap-southeast-1": {
+        "name": "Asia Pacific (Singapore)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 1.3521,
+          "longitude": 103.8198
+        },
+        "connectivity": {
+          "bandwidth_gbps": 150,
+          "peering": ["ap-southeast-2", "ap-northeast-1", "ap-south-1", "eu-central-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "ap-southeast-2": {
+        "name": "Asia Pacific (Sydney)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": -33.8688,
+          "longitude": 151.2093
+        },
+        "connectivity": {
+          "bandwidth_gbps": 100,
+          "peering": ["ap-southeast-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "ap-northeast-1": {
+        "name": "Asia Pacific (Tokyo)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 35.6762,
+          "longitude": 139.6503
+        },
+        "connectivity": {
+          "bandwidth_gbps": 150,
+          "peering": ["ap-southeast-1", "ap-northeast-2", "us-west-2"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      },
+      "ap-northeast-2": {
+        "name": "Asia Pacific (Seoul)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 37.5665,
+          "longitude": 126.9780
+        },
+        "connectivity": {
+          "bandwidth_gbps": 100,
+          "peering": ["ap-northeast-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": false
+        }
+      },
+      "ap-south-1": {
+        "name": "Asia Pacific (Mumbai)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 19.0760,
+          "longitude": 72.8777
+        },
+        "connectivity": {
+          "bandwidth_gbps": 100,
+          "peering": ["ap-southeast-1", "me-south-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": true
+        }
+      }
+    },
+    "south_america": {
+      "sa-east-1": {
+        "name": "South America (São Paulo)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": -23.5505,
+          "longitude": -46.6333
+        },
+        "connectivity": {
+          "bandwidth_gbps": 50,
+          "peering": ["us-east-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": false
+        }
+      }
+    },
+    "middle_east": {
+      "me-south-1": {
+        "name": "Middle East (Bahrain)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": 26.0667,
+          "longitude": 50.5577
+        },
+        "connectivity": {
+          "bandwidth_gbps": 50,
+          "peering": ["ap-south-1", "eu-central-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": false
+        }
+      }
+    },
+    "africa": {
+      "af-south-1": {
+        "name": "Africa (Cape Town)",
+        "provider": "AWS",
+        "coordinates": {
+          "latitude": -33.9249,
+          "longitude": 18.4241
+        },
+        "connectivity": {
+          "bandwidth_gbps": 25,
+          "peering": ["eu-west-1"]
+        },
+        "capabilities": {
+          "storage": true,
+          "compute": true,
+          "cdn": false
+        }
+      }
+    }
+  },
+  "network_topology": {
+    "backbone_links": [
+      {
+        "from": "us-west-2",
+        "to": "us-east-1",
+        "bandwidth_gbps": 400,
+        "latency_ms": 65,
+        "redundancy": 3
+      },
+      {
+        "from": "us-east-1",
+        "to": "eu-west-1",
+        "bandwidth_gbps": 300,
+        "latency_ms": 85,
+        "redundancy": 2
+      },
+      {
+        "from": "eu-central-1",
+        "to": "ap-southeast-1",
+        "bandwidth_gbps": 200,
+        "latency_ms": 140,
+        "redundancy": 2
+      },
+      {
+        "from": "ap-northeast-1",
+        "to": "us-west-2",
+        "bandwidth_gbps": 200,
+        "latency_ms": 95,
+        "redundancy": 2
+      }
+    ],
+    "peering_agreements": [
+      {
+        "provider": "AWS",
+        "type": "private",
+        "locations": ["all"]
+      },
+      {
+        "provider": "Cloudflare",
+        "type": "public",
+        "locations": ["us-west-2", "us-east-1", "eu-central-1", "ap-southeast-1"]
+      },
+      {
+        "provider": "Google",
+        "type": "public",
+        "locations": ["us-west-2", "us-east-1", "eu-west-1", "ap-northeast-1"]
+      }
+    ]
+  },
+  "latency_matrix": {
+    "us-west-2": {
+      "us-west-1": 20,
+      "us-east-1": 65,
+      "eu-west-1": 140,
+      "eu-central-1": 150,
+      "ap-southeast-1": 160,
+      "ap-northeast-1": 95,
+      "sa-east-1": 180
+    },
+    "us-east-1": {
+      "us-west-2": 65,
+      "eu-west-1": 85,
+      "eu-central-1": 95,
+      "ap-southeast-1": 220,
+      "ap-northeast-1": 170,
+      "sa-east-1": 120
+    },
+    "eu-central-1": {
+      "us-west-2": 150,
+      "us-east-1": 95,
+      "eu-west-1": 25,
+      "ap-southeast-1": 140,
+      "ap-northeast-1": 210,
+      "sa-east-1": 200
+    },
+    "ap-southeast-1": {
+      "us-west-2": 160,
+      "us-east-1": 220,
+      "eu-central-1": 140,
+      "ap-northeast-1": 75,
+      "ap-south-1": 55,
+      "ap-southeast-2": 90
+    }
+  },
+  "cost_per_region": {
+    "us-west-2": {
+      "storage_per_gb_month": 0.023,
+      "compute_per_hour": 0.0464,
+      "bandwidth_per_gb": 0.09
+    },
+    "us-east-1": {
+      "storage_per_gb_month": 0.023,
+      "compute_per_hour": 0.0464,
+      "bandwidth_per_gb": 0.09
+    },
+    "eu-central-1": {
+      "storage_per_gb_month": 0.025,
+      "compute_per_hour": 0.052,
+      "bandwidth_per_gb": 0.09
+    },
+    "ap-southeast-1": {
+      "storage_per_gb_month": 0.025,
+      "compute_per_hour": 0.052,
+      "bandwidth_per_gb": 0.12
+    },
+    "sa-east-1": {
+      "storage_per_gb_month": 0.034,
+      "compute_per_hour": 0.068,
+      "bandwidth_per_gb": 0.15
+    }
+  }
+}
