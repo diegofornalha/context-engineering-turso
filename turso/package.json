@@ -1,0 +1,22 @@
+{
+  "name": "turso-a2a-agent",
+  "version": "1.0.0",
+  "description": "Turso database A2A (Agent-to-Agent) protocol implementation",
+  "main": "simple-server.js",
+  "scripts": {
+    "start": "node simple-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["turso", "database", "a2a", "agent"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "@libsql/client": "^0.15.9",
+    "dotenv": "^17.2.0",
+    "zod": "^4.0.5"
+  }
+}
