@@ -193,7 +193,7 @@ def init_database():
 # Inicializar banco
 init_database()
 
-async def sync_to_turso(episode_data: Dict[str, Any]):
+async def sync_episode_to_turso(episode_data: Dict[str, Any]):
     """Sincroniza episódio com o banco Turso"""
     try:
         # Adicionar à fila de sincronização
@@ -307,7 +307,7 @@ async def add_episode(
     
     # Sincronizar com Turso se solicitado
     if sync_to_turso:
-        await sync_to_turso({
+        await sync_episode_to_turso({
             "id": episode_id,
             "name": name,
             "content": content,
