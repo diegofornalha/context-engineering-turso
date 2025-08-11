@@ -18,7 +18,7 @@
 
 1. **`/graphiti-turso/graphiti_mcp_fastmcp.py`**
    - Servidor MCP usando FastMCP (API simplificada)
-   - Ferramentas: add_episode, search_knowledge, list_episodes, get_status, clear_memory
+   - Ferramentas aprimoradas com novas funcionalidades (11/08/2025)
 
 2. **`/graphiti-turso/start_mcp.sh`**
    - Script de inicialização atualizado para usar FastMCP
@@ -52,12 +52,19 @@ Para adicionar os servidores ao Claude Desktop, você pode usar a seguinte confi
 
 ### 🛠️ Ferramentas Disponíveis
 
-#### Graphiti-Turso (Sistema de Memória)
+#### Graphiti-Turso (Sistema de Memória) - ATUALIZADO ✨
+**Ferramentas Originais:**
 - `add_episode` - Adiciona episódios de memória
 - `search_knowledge` - Busca conhecimento relevante
 - `list_episodes` - Lista episódios recentes
 - `get_status` - Status do sistema
-- `clear_memory` - Limpa memória
+- `clear_memory` - Limpa toda memória
+
+**Novas Ferramentas (11/08/2025):**
+- `remove_episode` - Remove episódio específico por ID ✅
+- `remove_episodes_by_name` - Remove episódios por padrão de nome ✅
+- `update_episode` - Atualiza episódio existente ✅
+- `get_episode` - Obtém episódio específico por ID ✅
 
 #### Turso (Banco de Dados)
 - Todas as ferramentas MCP do Turso para gerenciar bancos de dados
@@ -101,3 +108,4 @@ Resultado esperado:
 
 ---
 *Configuração testada e validada em 11 de Agosto de 2025*
+*Atualizado em 11 de Agosto de 2025: Adicionadas ferramentas de gerenciamento granular de episódios*
