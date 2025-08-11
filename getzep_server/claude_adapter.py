@@ -115,19 +115,45 @@ Não inclua explicações, apenas o JSON.
 
 class ClaudeEmbedder:
     """
-    Embedder que usa Claude para gerar embeddings semânticos
-    Como Claude não tem embeddings nativos, usamos uma abordagem alternativa
+    Embedder que usa Turso como backend para embeddings
+    Integração completa com Claude para geração inteligente de vetores
     """
     
-    def __init__(self, config: Optional[ClaudeConfig] = None):
+    def __init__(self, config: Optional[ClaudeConfig] = None, use_turso: bool = True):
         self.config = config or ClaudeConfig()
         self.llm_client = ClaudeLLMClient(config)
+        self.use_turso = use_turso
+        
+        if use_turso:
+            # Importa o adaptador Turso
+            try:
+                from turso_embeddings_adapter import (
+                    TursoGraphitiEmbedder, 
+                    create_turso_embeddings_config
+                )
+                turso_config = create_turso_embeddings_config()
+                self.turso_embedder = TursoGraphitiEmbedder(turso_config)
+                logger.info("Usando Turso como backend de embeddings")
+            except Exception as e:
+                logger.warning(f"Não foi possível inicializar Turso embeddings: {e}")
+                self.use_turso = False
+                self.turso_embedder = None
+        else:
+            self.turso_embedder = None
         
     async def embed(self, texts: List[str]) -> List[List[float]]:
         """
-        Gera pseudo-embeddings usando Claude
-        Para produção, considere usar um modelo de embeddings dedicado
+        Gera embeddings usando Turso (preferencial) ou Claude fallback
         """
+        if self.use_turso and self.turso_embedder:
+            try:
+                # Usa Turso para embeddings persistentes e eficientes
+                return await self.turso_embedder.embed(texts)
+            except Exception as e:
+                logger.error(f"Erro ao usar Turso embeddings: {e}")
+                # Fallback para método anterior
+        
+        # Fallback: método Claude simples
         embeddings = []
         
         for text in texts:
@@ -165,8 +191,27 @@ Exemplo: 0.8, 0.3, 0.5, 0.9, 0.2, 0.7, 0.4, 0.6, 0.1, 0.5
         """
         Gera embedding para uma query
         """
+        if self.use_turso and self.turso_embedder:
+            try:
+                return await self.turso_embedder.embed_query(query)
+            except Exception as e:
+                logger.error(f"Erro ao usar Turso para query: {e}")
+        
+        # Fallback
         result = await self.embed([query])
         return result[0]
+    
+    async def search_similar(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Busca por conteúdo similar usando embeddings Turso
+        """
+        if self.use_turso and self.turso_embedder:
+            try:
+                return await self.turso_embedder.adapter.search_similar(query, limit)
+            except Exception as e:
+                logger.error(f"Erro na busca similar: {e}")
+        
+        return []
 
 class ClaudeGraphitiAdapter:
     """
@@ -193,7 +238,8 @@ class ClaudeGraphitiAdapter:
         
         # Clientes adaptados
         self.llm_client = ClaudeLLMClient(config)
-        self.embedder = ClaudeEmbedder(config)
+        # Usa Turso como backend de embeddings por padrão
+        self.embedder = ClaudeEmbedder(config, use_turso=True)
         
     def get_llm_client(self) -> ClaudeLLMClient:
         """Retorna o cliente LLM do Claude"""
